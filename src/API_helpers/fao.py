@@ -1,11 +1,9 @@
 import requests
 import json
 
-class MakeApiCall:
-    def __init__(self, url, params):
-        self.url = url
-        self.params = params
 
-    def get(self):
-        response = requests.get(self.url, params=self.params)
-        return response.json()
+def get_fao_data(country, species):
+    url = f"http://gbadske.org:9000/GBADsLivestockPopulation/faostat?year=*&country={country}&species={species}&format=file"
+    print(url)
+    response = requests.get(url)
+    return response.text
