@@ -25,7 +25,7 @@ The goal is to present this data in plots and tables with points, lines, and err
 - Botswana
 - Egypt
 - South Africa
-- Idndonisia
+- Indonesia
 - China
 - Australia
 - New Zealand
