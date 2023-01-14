@@ -22,7 +22,10 @@ country = countries[2]
 specie = species[0]
 
 # Step one: Get FAO data
-fao_data = fao.get_data(country, specie)
+if country == "USA":
+    fao_data = fao.get_data("United%20States%20of%20America", specie)
+else:
+    fao_data = fao.get_data(country, specie)
 
 fao_data = str2frame(fao_data, "fao")
 fao_data['source'] = "fao"
@@ -35,13 +38,15 @@ fao_data.sort_values(by=['year'], inplace=True)
 
 
 # Step two: Get OIE data
-oie_data = oie.get_data(country, specie)
+if country == "USA":
+    oie_data = oie.get_data("United%20States%20of%20America", specie)
+else:
+    oie_data = oie.get_data(country, specie)
 oie_data = str2frame(oie_data, "oie")
 oie_data['source'] = "oie"
 oie_data = oie_data.drop(columns=['country'])
 oie_data = oie_data.replace('"','', regex=True)
 oie_data.sort_values(by=['year'], inplace=True)
-print(oie_data)
 
 #print("oie data")
 #print(oie_data.head())
@@ -56,6 +61,10 @@ except:
         csv_data = pd.read_csv("censusData/Ethiopia.csv")
     except:
         print("Error, count not find the correct csv file")
+
+#species.append(csv_data["species"].tolist()) 
+species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
+species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
 
 #csv_data['source'] = "census"
 
@@ -91,9 +100,14 @@ app.layout = html.Div(children=[
     dcc.Graph(
         id='example-graph',
         figure=fig
-    )
+    ),
+    dcc.Checklist(
+        id="checklist",
+        options=species,
+        value=[specie],
+        inline=True
+    ),
 ])
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
