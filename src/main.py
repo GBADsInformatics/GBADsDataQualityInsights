@@ -15,10 +15,10 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
     return df
 
-countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Idndonisia", "China", "Australia", "New Zealand", "Japan", "Mexico", "Argentina", "Chile"]
+countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
-country = countries[0]
+country = countries[2]
 specie = species[0]
 
 # Step one: Get FAO data
@@ -28,6 +28,7 @@ fao_data = str2frame(fao_data, "fao")
 fao_data['source'] = "fao"
 fao_data = fao_data.drop(columns=['iso3', "country"])
 fao_data = fao_data.replace('"','', regex=True)
+fao_data.sort_values(by=['year'], inplace=True)
 
 #print("fao data")
 #print(fao_data.head())
@@ -39,6 +40,8 @@ oie_data = str2frame(oie_data, "oie")
 oie_data['source'] = "oie"
 oie_data = oie_data.drop(columns=['country'])
 oie_data = oie_data.replace('"','', regex=True)
+oie_data.sort_values(by=['year'], inplace=True)
+print(oie_data)
 
 #print("oie data")
 #print(oie_data.head())
@@ -46,15 +49,15 @@ oie_data = oie_data.replace('"','', regex=True)
 # Step 3: Get Census data
 print("country is: '"+ country+ "'")
 try:
-    csv_data = pd.read_csv(f"src/censusData/{country}.csv")\
+    csv_data = pd.read_csv(f"censusData/{country}.csv")\
 
 except:
     try:
-        csv_data = pd.read_csv("src/censusData/Ethiopia.csv")
+        csv_data = pd.read_csv("censusData/Ethiopia.csv")
     except:
         print("Error, count not find the correct csv file")
 
-csv_data['source'] = "census"
+#csv_data['source'] = "census"
 
 # Step 4: Get National data
 
