@@ -10,6 +10,18 @@ The goal is to present this data in plots and tables with points, lines, and err
 
 ![Alt text](lib/graphExample.png?raw=true "Example")
 
+## To The DashBoard
+Make sure you have pip/pip3 installed
+
+Run
+`pip3 (or pip) install -r requirements.txt`
+
+Then
+`cd src`
+
+Finally run
+`python3 (or python) main.py`
+
 ## Data sources
 - FAO and WOAH/OIE come from the API
 - Census data from countries is in the S3 bucket (on AWS)
