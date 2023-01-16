@@ -29,37 +29,41 @@ app.layout = html.Div(children=[
     html.H1(children='Data Quality Comparison for FAO, OIE, Census Data, and National Sources'),
 
     dcc.Graph(id='graph'),
-    #dcc.Checklist(
-    #    id="checklist",
-    #    options=species,
-    #    value=[specie],
-    #),
-    dcc.Checklist(
+
+    html.H3(children='Countries'),
+    dcc.Dropdown(
+        countries,
+        value=[countries[0]],
+        id="country_checklist",),
+
+    html.H3(children='Species'),
+    dcc.Dropdown(
         species,
         value=[species[0]],
-        id="checklist",)
+        id="species_checklist",),
 
 ])
 
 @app.callback(
-    Output("graph", "figure"), 
-    Input("checklist", "value"))
-def update_line_chart(specie):
+    Output("graph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
     species = ["Cattle","Sheep","Goats","Pigs","Chickens", "Horses", "Ostrichs", "Asses and Mules", "Bees", "Elk", "Rabbits", "Mink", "Deer", "Turkeys"]
-
-    country = countries[1]
 
     if specie == None:
         specie = species[0]
     else:
         specie = specie[0]
 
-    print(specie)
-
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
+
+    elif country == None:
+        fao_data = fao.get_data(countries[0], specie)
+
     else:
         fao_data = fao.get_data(country, specie)
 
