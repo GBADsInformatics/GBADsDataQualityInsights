@@ -136,10 +136,6 @@ def update_line_chart(specie, country):
         nationalData = pd.DataFrame()
         nationalData_index_list = []
 
-    print("National data")
-    print(nationalData)
-
-
     # Build a master dataframe
     master_df = pd.concat([fao_data, oie_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
