@@ -18,10 +18,6 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
-country = countries[1]
-specie = species[0]
-
-
 #Build a Plotly graph around the data
 app = Dash(__name__)
 
@@ -33,16 +29,48 @@ app.layout = html.Div(children=[
     html.H3(children='Countries'),
     dcc.Dropdown(
         countries,
-        value=[countries[0]],
-        id="country_checklist",),
+        value=countries[0],
+        id="country_checklist",
+    ),
 
     html.H3(children='Species'),
     dcc.Dropdown(
         species,
-        value=[species[0]],
-        id="species_checklist",),
-
+        value=species[0],
+        id="species_checklist",
+    ),
 ])
+
+
+@app.callback(
+    Output("species_checklist", "options"),
+    Input("country_checklist", "value"))
+def update_species_checklist(country):
+    # Step one: Get FAO data
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+
+    # Step 3: Get Census data
+    try:
+        csv_data = pd.read_csv(f"censusData/{country}.csv")
+        species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
+        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
+
+    except:
+        print("Error, count not find the correct csv file")
+
+
+
+    # Step 4: Get National data
+    try:
+        nationalData = pd.read_csv(f"nationalData/{country}.csv")
+        species = species + nationalData["species"].tolist() # Add the species from the csv file to the list of species
+        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
+
+    except:
+        print("Error, count not find the correct csv file")
+
+
+    return species
 
 @app.callback(
     Output("graph", "figure"),
@@ -51,12 +79,10 @@ app.layout = html.Div(children=[
 def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens", "Horses", "Ostrichs", "Asses and Mules", "Bees", "Elk", "Rabbits", "Mink", "Deer", "Turkeys"]
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
         specie = species[0]
-    else:
-        specie = specie[0]
 
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -86,38 +112,39 @@ def update_line_chart(specie, country):
 
     # Step 3: Get Census data
     try:
-        csv_data = pd.read_csv(f"censusData/{country}.csv")\
+        csv_data = pd.read_csv(f"censusData/{country}.csv")
+        species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
+        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
+        csv_index_list = csv_data[(csv_data['species'] == specie)].index.tolist()
 
     except:
-        try:
-            csv_data = pd.read_csv("censusData/Ethiopia.csv")
-        except:
-            print("Error, count not find the correct csv file")
+        print("Error, count not find the correct csv file")
+        csv_data = pd.DataFrame()
+        csv_index_list = []
 
-    #species.append(csv_data["species"].tolist()) 
-    species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
-    species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
-
-    #csv_data['source'] = "census"
 
     # Step 4: Get National data
     try:
-        nationalData = pd.read_csv(f"nationalData/{country}.csv")\
+        nationalData = pd.read_csv(f"nationalData/{country}.csv")
+        #Add the species from the national data
+        species = species + nationalData["species"].tolist() # Add the species from the csv file to the list of species
+        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
+        nationalData_index_list = nationalData[(nationalData['species'] == specie)].index.tolist()
 
     except:
-        try:
-            nationalData = pd.read_csv("censusData/Ethiopia.csv")
-        except:
-            print("Error, count not find the correct csv file")
+        print("Error, count not find the correct csv file")
+        nationalData = pd.DataFrame()
+        nationalData_index_list = []
+
+    print("National data")
+    print(nationalData)
 
 
     # Build a master dataframe
-    csv_index_list = csv_data[(csv_data['species'] == specie)].index.tolist()
-    nationalData_index_list = nationalData[(nationalData['species'] == specie)].index.tolist()
-
     master_df = pd.concat([fao_data, oie_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
-    fig = px.line(oie_data,
+    # Build the plotly graph
+    fig = px.line(master_df,
                 x=master_df["year"],
                 y=master_df["population"],
                 color=master_df["source"],
