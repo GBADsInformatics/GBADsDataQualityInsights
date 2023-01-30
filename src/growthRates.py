@@ -87,14 +87,13 @@ FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 x = np.random.normal( 0, 1, len(FaoGrowthRate['growthRate'].tolist()))
 
-print(x)
+#print(x)
 
-hist_data = [x]
 
-print(FaoGrowthRate['growthRate'].tolist())
+#print(FaoGrowthRate['growthRate'].tolist())
 data = FaoGrowthRate['growthRate'].tolist()
 
-fig = ff.create_distplot([x], ["FAO"])
+fig = ff.create_distplot([x], ["FAO"], bin_size=0.1)
 #fig = px.histogram(FaoGrowthRate, x="year", y="growthRate", marginal="box", hover_data=FaoGrowthRate.columns)
 
 #Add the mean and standard deviation to the graph
@@ -124,9 +123,16 @@ fig.show()
 
 # Get the values outside of the second standard deviation
 outliers = []
-for i in range(len(x)):
-    if x[i] > stdev_pluss2 or x[i] < stdev_minus2:
-        outliers.append(x[i])
 
-fig2 = go.Figure(data=[go.Table(header=dict(values=['Outliers']),)])
+print("STD plus: ", stdev_pluss * 3)
+print("STD minus: ", stdev_minus * 3)
+
+#print(FaoGrowthRate.iloc[0])
+for i in range(len(x)):
+    if FaoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or FaoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
+        outliers.append(FaoGrowthRate.iloc[i])
+
+print(outliers)
+print("Num points = ", len(FaoGrowthRate))
+#fig2 = go.Figure(data=[go.Table(header=dict(values=['Outliers']),)])
 #fig2.show()
