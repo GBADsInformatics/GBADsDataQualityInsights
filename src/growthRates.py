@@ -6,7 +6,7 @@ import API_helpers.oie as oie
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
-import helpers
+import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
 import numpy as np
 import plotly.graph_objects as go
@@ -81,7 +81,7 @@ except:
     nationalData = pd.DataFrame()
     nationalData_index_list = []
 
-FaoGrowthRate = helpers.getGrowthRate(fao_data)
+FaoGrowthRate = helperFunctions.growthRate(fao_data)
 
 FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
