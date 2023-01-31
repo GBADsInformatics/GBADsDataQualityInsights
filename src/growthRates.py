@@ -122,17 +122,15 @@ fig.show()
 
 
 # Get the values outside of the second standard deviation
-outliers = []
-
-print("STD plus: ", stdev_pluss * 3)
-print("STD minus: ", stdev_minus * 3)
+outliers = pd.DataFrame()
 
 #print(FaoGrowthRate.iloc[0])
 for i in range(len(x)):
     if FaoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or FaoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-        outliers.append(FaoGrowthRate.iloc[i])
+        entry = FaoGrowthRate.iloc[i]
+        outliers = pd.concat([outliers, entry], axis=1)
 
-print(outliers)
-print("Num points = ", len(FaoGrowthRate))
+#print(outliers)
+#print("Num points = ", len(FaoGrowthRate))
 #fig2 = go.Figure(data=[go.Table(header=dict(values=['Outliers']),)])
 #fig2.show()
