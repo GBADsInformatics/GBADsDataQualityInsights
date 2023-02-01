@@ -6,11 +6,13 @@ import pandas as pd
 #field: The field or column name to get the rate of change for
 #Returns: A dataframe with the rate of change for each year, where rateOfChange is a float (%%.%%%%%%%%...)
 def getROC(df, field):
-    roc = pd.DataFrame(columns=['year', field])
+    roc = pd.DataFrame(columns=['year', "rateOfChange"])
 
     for i in range(len(df) - 1):
         rate = ((int(df.iloc[i+1][field]) - int(df.iloc[i][field]))/ (int(df.iloc[i + 1][field] - int(df.iloc[i][field])))) * 100
-        roc = roc.append({'year': df.iloc[i]['year'], 'rateOfChange': rate}, ignore_index=True)
+        data = [df.iloc[i]['year'], rate]
+        row = pd.DataFrame([data], columns=['year', "rateOfChange"])
+        roc = df.concat([roc, row], axis=0)
 
     return roc
 
@@ -20,11 +22,13 @@ def getROC(df, field):
 # field: The field or column name to get the growth rate for
 # Returns: A dataframe with the growth rate for each year, where growthRate is a float (%%.%%%%%%%%...)
 def growthRate(df, field):
-    growthRates = pd.DataFrame(columns=['year', field])
+    growthRates = pd.DataFrame(columns=['year', "growthRate"])
 
     for i in range(len(df) - 1):
         rate = ((int(df.iloc[i+1][field]) - int(df.iloc[i][field]))/ int(df.iloc[i][field])) * 100
-        growthRates = growthRates.append({'year': df.iloc[i]['year'], 'growthRate': rate}, ignore_index=True)
+        data = [df.iloc[i]['year'], rate]
+        row = pd.DataFrame([data], columns=['year', "growthRate"])
+        growthRates = pd.concat([growthRates, row], axis=0)
 
     return growthRates
 

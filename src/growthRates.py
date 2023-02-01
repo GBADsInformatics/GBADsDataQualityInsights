@@ -81,14 +81,15 @@ except:
     nationalData = pd.DataFrame()
     nationalData_index_list = []
 
-FaoGrowthRate = helperFunctions.growthRate(fao_data)
+#print(fao_data.head())
+
+FaoGrowthRate = helperFunctions.growthRate(fao_data, "population")
+
+print(FaoGrowthRate.head())
 
 FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 x = np.random.normal( 0, 1, len(FaoGrowthRate['growthRate'].tolist()))
-
-#print(x)
-
 
 #print(FaoGrowthRate['growthRate'].tolist())
 data = FaoGrowthRate['growthRate'].tolist()
@@ -122,15 +123,13 @@ fig.show()
 
 
 # Get the values outside of the second standard deviation
-outliers = pd.DataFrame()
+outliers = pd.DataFrame(columns=['year', "growthRate"])
 
 #print(FaoGrowthRate.iloc[0])
 for i in range(len(x)):
     if FaoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or FaoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-        entry = FaoGrowthRate.iloc[i]
-        outliers = pd.concat([outliers, entry], axis=1)
+        data = [FaoGrowthRate.iloc[i]['year'], FaoGrowthRate.iloc[i]['growthRate']]
+        row = pd.DataFrame([data], columns=['year', "growthRate"])
+        outliers = pd.concat([outliers, row], axis=0)
 
-#print(outliers)
-#print("Num points = ", len(FaoGrowthRate))
-#fig2 = go.Figure(data=[go.Table(header=dict(values=['Outliers']),)])
-#fig2.show()
+print(outliers)
