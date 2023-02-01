@@ -1,4 +1,4 @@
-# Census Data Qaulity Research
+# Census Data Quality Research
 # Written By Ian McKechnie
 # Last Updated: Tuesday Dec 20, 2022
 import API_helpers.fao as fao

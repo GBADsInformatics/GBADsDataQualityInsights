@@ -9,10 +9,13 @@ def getROC(df, field):
     roc = pd.DataFrame(columns=['year', "rateOfChange"])
 
     for i in range(len(df) - 1):
-        rate = ((int(df.iloc[i+1][field]) - int(df.iloc[i][field]))/ (int(df.iloc[i + 1][field] - int(df.iloc[i][field])))) * 100
+        a = int(df.iloc[i+1][field])
+        b = int(df.iloc[i][field])
+        rate = (a-b)/a * 100
+        #rate = ((int() - int(df.iloc[i][field]))/ (int(df.iloc[i + 1][field] - int(df.iloc[i][field])))) * 100
         data = [df.iloc[i]['year'], rate]
         row = pd.DataFrame([data], columns=['year', "rateOfChange"])
-        roc = df.concat([roc, row], axis=0)
+        roc = pd.concat([roc, row], axis=0)
 
     return roc
 
@@ -43,31 +46,26 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 
 
 def getFormattedCensusData(country, specie, species):
-    print("Country is: " + country)
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
         species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
-        csv_index_list = csv_data[(csv_data['species'] == specie)].index.tolist()
 
     except Exception as e:
         print("CSV ERROR: ", e)
         csv_data = pd.DataFrame()
-        csv_index_list = []
 
-    return csv_data, csv_index_list
+    return csv_data.loc[csv_data['species'] == specie]
 
 def getFormattedNationalData(country, specie, species):
     try:
-        nationalData = pd.read_csv(f"../nationalData/{country}.csv")
+        nationalData = pd.read_csv(f"nationalData/{country}.csv")
         #Add the species from the national data
         species = species + nationalData["species"].tolist() # Add the species from the csv file to the list of species
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
-        nationalData_index_list = nationalData[(nationalData['species'] == specie)].index.tolist()
 
     except Exception as e:
         print("National Data ERROR: ", e)
         nationalData = pd.DataFrame()
-        nationalData_index_list = []
 
-    return nationalData, nationalData_index_list
+    return nationalData.loc[nationalData['species'] == specie]
