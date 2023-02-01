@@ -51,11 +51,20 @@ csv_roc = helperFunctions.getROC(csv_data, "population")
 
 national_roc = helperFunctions.getROC(national_data, "population")
 
-print("Fao Roc")
-print(fao_roc.head())
-print("Oie Roc")
-print(oie_roc.head())
-print("Csv Roc")
-print(csv_roc.head())
-print("National Roc")
-print(national_roc.head())
+# Step 5: Find the largest distance between all the points for each given year
+dfs = {"FAO Data" : fao_roc, "OIE Data": oie_roc, "Census Data" : csv_roc, "National Data" : national_roc}
+
+# plot the data
+fig = go.Figure()
+
+for i in dfs:
+    fig = fig.add_trace(go.Scatter(x = dfs[i]["year"],
+                                   y = dfs[i]["rateOfChange"],
+                                   name = i))
+
+fig.update_layout(
+    title=f"Rate of Change of {specie} in {country} Between Four Data Sources",
+    legend_title="Sources",
+)
+fig.show()
+

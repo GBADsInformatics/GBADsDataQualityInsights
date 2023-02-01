@@ -34,7 +34,6 @@ app.layout = html.Div(children=[
     ),
 ])
 
-
 @app.callback(
     Output("species_checklist", "options"),
     Input("country_checklist", "value"))
