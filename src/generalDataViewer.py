@@ -94,13 +94,14 @@ def update_line_chart(specie, country):
 
     # Step 3: Get Census data
     print("Country being sent = ", country)
-    csv_data, csv_index_list = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
     print(csv_data.head())
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     # Build a master dataframe
+    #master_df = pd.concat([fao_data, oie_data, csv_data.iloc, nationalData.iloc])
     master_df = pd.concat([fao_data, oie_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
     # Build the plotly graph

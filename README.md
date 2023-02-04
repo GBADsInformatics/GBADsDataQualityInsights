@@ -20,7 +20,7 @@ Then
 `cd src`
 
 Finally run
-`python3 (or python) main.py`
+`python3 (or python) generalDatViewer.py`
 
 or
 `python3 (or python) growthRates.py`
