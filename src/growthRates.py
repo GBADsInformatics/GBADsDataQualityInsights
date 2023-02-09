@@ -4,14 +4,13 @@
 import API_helpers.fao as fao
 import API_helpers.oie as oie
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, Input, Output, dash_table
 import plotly.express as px
 import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
 
 
 
@@ -24,7 +23,6 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
     return df
 
 
- # Step one: Get FAO data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
@@ -96,13 +94,9 @@ x = np.random.normal( 0, 1, len(FaoGrowthRate['growthRate'].tolist()))
 
 #print(FaoGrowthRate['growthRate'].tolist())
 data = FaoGrowthRate['growthRate'].tolist()
-# fig = make_subplots(rows=2, cols=2,
-#                     specs=[[{"secondary_y": True}, {"secondary_y": True}],
-#                            [{"secondary_y": True}, {"secondary_y": True}]])
-fig = make_subplots(rows = 1, cols = 1, shared_xaxes=False, shared_yaxes=False, specs=[[{"type": "histogram", "type" : "indicator"}]])
 
-
-sub = ff.create_distplot([x], ["FAO"], bin_size=0.1)
+print("x = ", x)
+fig = ff.create_distplot([x], ["FAO"], bin_size=0.1)
 #fig = px.histogram(FaoGrowthRate, x="year", y="growthRate", marginal="box", hover_data=FaoGrowthRate.columns)
 
 #Add the mean and standard deviation to the graph
@@ -116,16 +110,16 @@ stdev_pluss3 = np.std(x) * 3
 stdev_minus3 = np.std(x)*-1 * 3
 
 
-# sub.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-#                line = dict(color = 'blue', dash = 'dash'))
-# sub.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-#                line = dict(color = 'red', dash = 'dash'))
-# sub.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-#                line = dict(color = 'red', dash = 'dash'))
-# sub.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-#                line = dict(color = 'Green', dash = 'dash'))
-# sub.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-#                line = dict(color = 'Green', dash = 'dash'))
+fig.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+            line = dict(color = 'blue', dash = 'dash'))
+fig.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+            line = dict(color = 'red', dash = 'dash'))
+fig.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+            line = dict(color = 'red', dash = 'dash'))
+fig.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+            line = dict(color = 'Green', dash = 'dash'))
+fig.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+            line = dict(color = 'Green', dash = 'dash'))
 
 # Get the values outside of the second standard deviation
 outliers = pd.DataFrame(columns=['year', "growthRate"])
@@ -137,24 +131,25 @@ for i in range(len(x)):
         row = pd.DataFrame([data], columns=['year', "growthRate"])
         outliers = pd.concat([outliers, row], axis=0)
 
-print(outliers)
+# print(outliers)
+df = outliers
 
+#Build a Plotly graph around the data
+app = Dash(__name__)
 
-# Adding a table to show the outliers
+app.layout = html.Div(children=[
+    html.H1(children='Comparing Growth Rates for FAO, OIE, Census Data, and National Sources, Showing Outliers'),
 
-fig.add_trace(
-    go.Table(header=dict(values=['Year', 'Growth Rate']),
-        cells=dict(values=[outliers['year'], outliers['growthRate']])),
-    row=1, col=1, secondary_y=False
-)
+    dcc.Graph(id='graph', figure=fig),
 
-fig.add_trace(
-    sub.data[0],
-    row=1, col=1, secondary_y=False
-)
+    dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i}
+                 for i in df.columns],
+        data=df.to_dict('records'),
+    ),
 
+])
 
-
-fig.show()
-
-
+if __name__ == '__main__':
+    app.run_server(debug=True)
