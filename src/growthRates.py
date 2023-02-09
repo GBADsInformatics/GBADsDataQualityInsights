@@ -10,6 +10,9 @@ import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
 import numpy as np
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+
 
 
 def str2frame(estr, source, sep = ',', lineterm = '\n'):
@@ -93,8 +96,13 @@ x = np.random.normal( 0, 1, len(FaoGrowthRate['growthRate'].tolist()))
 
 #print(FaoGrowthRate['growthRate'].tolist())
 data = FaoGrowthRate['growthRate'].tolist()
+# fig = make_subplots(rows=2, cols=2,
+#                     specs=[[{"secondary_y": True}, {"secondary_y": True}],
+#                            [{"secondary_y": True}, {"secondary_y": True}]])
+fig = make_subplots(rows = 1, cols = 1, shared_xaxes=False, shared_yaxes=False, specs=[[{"type": "histogram", "type" : "indicator"}]])
 
-fig = ff.create_distplot([x], ["FAO"], bin_size=0.1)
+
+sub = ff.create_distplot([x], ["FAO"], bin_size=0.1)
 #fig = px.histogram(FaoGrowthRate, x="year", y="growthRate", marginal="box", hover_data=FaoGrowthRate.columns)
 
 #Add the mean and standard deviation to the graph
@@ -108,19 +116,16 @@ stdev_pluss3 = np.std(x) * 3
 stdev_minus3 = np.std(x)*-1 * 3
 
 
-fig.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-               line = dict(color = 'blue', dash = 'dash'))
-fig.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-               line = dict(color = 'red', dash = 'dash'))
-fig.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-               line = dict(color = 'red', dash = 'dash'))
-fig.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-               line = dict(color = 'Green', dash = 'dash'))
-fig.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-               line = dict(color = 'Green', dash = 'dash'))
-
-fig.show()
-
+# sub.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+#                line = dict(color = 'blue', dash = 'dash'))
+# sub.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+#                line = dict(color = 'red', dash = 'dash'))
+# sub.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+#                line = dict(color = 'red', dash = 'dash'))
+# sub.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+#                line = dict(color = 'Green', dash = 'dash'))
+# sub.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+#                line = dict(color = 'Green', dash = 'dash'))
 
 # Get the values outside of the second standard deviation
 outliers = pd.DataFrame(columns=['year', "growthRate"])
@@ -133,3 +138,23 @@ for i in range(len(x)):
         outliers = pd.concat([outliers, row], axis=0)
 
 print(outliers)
+
+
+# Adding a table to show the outliers
+
+fig.add_trace(
+    go.Table(header=dict(values=['Year', 'Growth Rate']),
+        cells=dict(values=[outliers['year'], outliers['growthRate']])),
+    row=1, col=1, secondary_y=False
+)
+
+fig.add_trace(
+    sub.data[0],
+    row=1, col=1, secondary_y=False
+)
+
+
+
+fig.show()
+
+
