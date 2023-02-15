@@ -8,11 +8,13 @@ import pandas as pd
 def getROC(df, field):
     roc = pd.DataFrame(columns=['year', "rateOfChange"])
 
+    # print(df)
+    # print("Type of df: ", type(df))
+
     for i in range(len(df) - 1):
         a = int(df.iloc[i+1][field])
         b = int(df.iloc[i][field])
         rate = (a-b)/a * 100
-        #rate = ((int() - int(df.iloc[i][field]))/ (int(df.iloc[i + 1][field] - int(df.iloc[i][field])))) * 100
         data = [df.iloc[i]['year'], rate]
         row = pd.DataFrame([data], columns=['year', "rateOfChange"])
         roc = pd.concat([roc, row], axis=0)
@@ -46,6 +48,10 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 
 
 def getFormattedCensusData(country, specie, species):
+    print("Country: ", country)
+    print("Specie: ", specie)
+    print("Species: ", species)
+
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
         species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species

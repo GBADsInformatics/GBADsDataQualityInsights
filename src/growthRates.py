@@ -1,6 +1,14 @@
 # Census Data Quality Research
 # Written By Ian McKechnie
-# Last Updated: Tuesday Jan 28, 2023
+# Last Updated: Tuesday Feb 15, 2023
+
+#Hypothsis
+# If you take all the growth rates for a population of animals in a country every year,
+# and you plot every yearly growth rate, it should produce a normal curve. From there we can
+# spot outliers by defining a cut off of 3 standard deviations. Past this point we can label
+# those points as outliers and conclude that there is a high chance that they are inaccuracies.
+
+
 import API_helpers.fao as fao
 import API_helpers.oie as oie
 import pandas as pd
@@ -131,7 +139,6 @@ for i in range(len(x)):
         row = pd.DataFrame([data], columns=['year', "growthRate"])
         outliers = pd.concat([outliers, row], axis=0)
 
-# print(outliers)
 df = outliers
 
 #Build a Plotly graph around the data
@@ -148,7 +155,6 @@ app.layout = html.Div(children=[
                  for i in df.columns],
         data=df.to_dict('records'),
     ),
-
 ])
 
 if __name__ == '__main__':
