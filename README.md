@@ -10,13 +10,15 @@ The goal is to present this data in plots and tables with points, lines, and err
 
 ![Alt text](lib/graphExample.png?raw=true "Example")
 
-## To The DashBoard
+## To Run The DashBoard
 Make sure you have pip/pip3 installed
 
 Run
+
 `pip3 (or pip) install -r requirements.txt`
 
-Then
+Then run
+
 `cd src`
 
 Finally run
