@@ -58,17 +58,145 @@ csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 
 
-# print("Rate of changes")
-# print(fao_roc.head())
-# print(oie_roc.head())
-# print(csv_roc.head())
-print(national_roc)
+print("Rate of changes")
+print("fao", fao_roc.tail())
+print("oie", oie_roc.tail())
+print("csv", csv_roc)
+print("natonal", national_roc.tail())
 
-# Step 5: Find the largest distance between all the points for each given year
-allData = pd.merge(fao_roc, oie_roc, on="year")
-allData = pd.merge(allData, csv_roc, on="year")
-allData = pd.merge(allData, national_roc, on="year")
+# Step 5: Find the path distance between each point in each data set
+mainDict = {}
 
-print("all Data")
-print(allData)
+# Get every year for all tables
+years = []
+for year in fao_roc['year']:
+    years.append(year)
 
+# Check the OIE data
+if oie_roc['year'].to_list()[0] not in years or oie_roc['year'].to_list()[-1] not in years:
+    for year in oie_roc['year']:
+        if year not in years:
+            years.append(year)
+
+# Check the CSV data
+
+if csv_roc != [] and csv_roc['year'].to_list()[0] not in years or csv_roc['year'].to_list()[-1] not in years:
+    for year in csv_roc['year']:
+        if year not in years:
+            years.append(year)
+
+# Check the National data
+if national_roc != [] and national_roc['year'].to_list()[0] not in years or national_roc['year'].to_list()[-1] not in years:
+    for year in national_roc['year']:
+        if year not in years:
+            years.append(year)
+
+
+
+# Create the dictionary
+for year in years:
+    # This df is for each year in the table
+    mainDf = pd.DataFrame(columns=["elen", "fao", "oie", "csv", "national"])
+
+    # All the FAO distances
+    fao_distances = ['fao']
+    fao_distances.append(None)
+
+    if fao_roc[year] != None:
+        if oie_roc[year] != None:
+            fao_distances.append(fao_roc[year]['rateOfChange'] - oie_roc[year]['rateOfChange'])
+
+        if csv_roc != [] and csv_roc[year] != None:
+            fao_distances.append(fao_roc[year]['rateOfChange'] - csv_roc[year]['rateOfChange'])
+
+        if national_roc != [] and national_roc[year] != None:
+            fao_distances.append(fao_roc[year]['rateOfChange'] - national_roc[year]['rateOfChange'])
+
+        mainDf.loc[0] = fao_distances
+
+    else:
+        fao_distances.append(None)
+        fao_distances.append(None)
+        fao_distances.append(None)
+
+        mainDf.loc[0] = fao_distances
+
+    # All the OIE distances
+    oie_distances = ['oie']
+
+    if fao_roc[year] != None:
+        if fao_roc[year] != None:
+            oie_distances.append(oie_roc[year]['rateOfChange'] - fao_roc[year]['rateOfChange'])
+
+        oie_distances.append(None)
+
+        if csv_roc != [] and csv_roc[year] != None:
+            oie_distances.append(oie_roc[year]['rateOfChange'] - csv_roc[year]['rateOfChange'])
+
+        if national_roc != [] and national_roc[year] != None:
+            oie_distances.append(oie_roc[year]['rateOfChange'] - national_roc[year]['rateOfChange'])
+
+        mainDf.loc[1] = oie_distances
+
+    else:
+        oie_distances.append(None)
+        oie_distances.append(None)
+        oie_distances.append(None)
+        oie_distances.append(None)
+
+        mainDf.loc[1] = oie_distances
+
+    # All the CSV distances
+    csv_distances = ['csv']
+
+    if csv_roc[year] != None:
+        if fao_roc[year] != None:
+            csv_distances.append(csv_roc[year]['rateOfChange'] - fao_roc[year]['rateOfChange'])
+
+        if oie_roc[year] != None:
+            csv_distances.append(csv_roc[year]['rateOfChange'] - oie_roc[year]['rateOfChange'])
+
+        csv_distances.append(None)
+
+        if national_roc != [] and national_roc[year] != None:
+            csv_distances.append(csv_roc[year]['rateOfChange'] - national_roc[year]['rateOfChange'])
+
+        mainDf.loc[2] = csv_distances
+
+    else:
+        csv_distances.append(None)
+        csv_distances.append(None)
+        csv_distances.append(None)
+        csv_distances.append(None)
+
+        mainDf.loc[2] = csv_distances
+
+    # All the National distances
+    national_distances = ['national']
+
+    if national_roc[year] != None:
+        if fao_roc[year] != None:
+            national_distances = ['national', national_roc[year]['rateOfChange'] - fao_roc[year]['rateOfChange']]
+
+        if oie_roc[year] != None:
+            national_distances.append(national_roc[year]['rateOfChange'] - oie_roc[year]['rateOfChange'])
+
+        if csv_roc != [] and csv_roc[year] != None:
+            national_distances.append(national_roc[year]['rateOfChange'] - csv_roc[year]['rateOfChange'])
+
+        national_distances.append(None)
+
+        mainDf.loc[3] = national_distances
+
+    else:
+        national_distances.append(None)
+        national_distances.append(None)
+        national_distances.append(None)
+        national_distances.append(None)
+
+        mainDf.loc[3] = national_distances
+
+
+    mainDict[year] = mainDf
+
+print(mainDict)

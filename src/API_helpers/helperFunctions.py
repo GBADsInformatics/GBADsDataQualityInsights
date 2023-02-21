@@ -8,9 +8,6 @@ import pandas as pd
 def getROC(df, field):
     roc = pd.DataFrame(columns=['year', "rateOfChange"])
 
-    # print(df)
-    # print("Type of df: ", type(df))
-
     for i in range(len(df) - 1):
         a = int(df.iloc[i+1][field])
         b = int(df.iloc[i][field])
@@ -48,9 +45,6 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 
 
 def getFormattedCensusData(country, specie, species):
-    print("Country: ", country)
-    print("Specie: ", specie)
-    print("Species: ", species)
 
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
@@ -59,7 +53,7 @@ def getFormattedCensusData(country, specie, species):
         csv_index_list = csv_data[(csv_data['species'] == specie)].index.tolist()
 
     except:
-        print("Error, count not find the correct csv file")
+        print("Error, count not find the correct csv file for the census data")
         csv_data = pd.DataFrame()
         csv_index_list = []
 
@@ -75,7 +69,7 @@ def getFormattedNationalData(country, specie, species):
         nationalData_index_list = nationalData[(nationalData['species'] == specie)].index.tolist()
 
     except:
-        print("Error, count not find the correct csv file")
+        print("Error, count not find the correct csv file for the national data")
         nationalData = pd.DataFrame()
         nationalData_index_list = []
 
