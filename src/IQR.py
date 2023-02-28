@@ -51,45 +51,44 @@ oie_roc = helperFunctions.getROC(oie_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 
-print("Rate of changes")
-print("fao", fao_roc.tail())
 # print("oie", oie_roc.tail())
 # print("csv", csv_roc)
 # print("natonal", national_roc.tail())
 
 # Get the year range from the user
-startYear = 1990
-endYear = 2000
+startYear = 1960
+endYear = 2019
 
-# while True:
-#     startYear = input("What is your start year? ").strip()
-#     if startYear.isdigit():
-#         startYear = int(startYear)
-#         break
-#     else:
-#         print("Please enter a valid year")
+while True:
+    startYear = input("What is your start year? ").strip()
+    if startYear.isdigit():
+        startYear = int(startYear)
+        break
+    else:
+        print("Please enter a valid year")
 
-# while True:
-#     endYear = input("What is your end year? ").strip()
-#     if endYear.isdigit():
-#         endYear = int(endYear)
-#         break
-#     else:
-#         print("Please enter a valid year")
+while True:
+    endYear = input("What is your end year? ").strip()
+    if endYear.isdigit():
+        endYear = int(endYear)
+        break
+    else:
+        print("Please enter a valid year")
 
 #Get the IQR for FAO
 fao_data = fao_roc.values.tolist()
-print(fao_data)
 fao_dict = {}
 
 for elem in fao_data:
-    print("elem")
-    print(elem)
     fao_dict[int(elem[0])] = elem[1]
 
 fao_iqr_list = []
 for i in range(startYear, endYear):
-    fao_iqr_list.append(fao_dict[i])
+    #Add all the years that exist in the range
+    try:
+        fao_iqr_list.append(fao_dict[i])
+    except:
+        continue
 
 firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
 secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
@@ -99,7 +98,108 @@ secondQuartile = firstHalf[len(firstHalf)//2:]
 thirdQuartile = secondHalf[:len(secondHalf)//2]
 fourthQuartile = secondHalf[len(secondHalf)//2:]
 
-print("First Quartile", firstQuartile)
-print("Second Quartile", secondQuartile)
-print("Third Quartile", thirdQuartile)
-print("Fourth Quartile", fourthQuartile)
+if firstQuartile == [] or thirdQuartile == []:
+    fao_iqr = None
+else:
+    fao_q1 = np.median(firstQuartile)
+    fao_q3 = np.median(thirdQuartile)
+    fao_iqr = fao_q3 - fao_q1
+
+print("FAO IQR", fao_iqr)
+
+#Get the IQR for OIE
+oie_data = oie_roc.values.tolist()
+oie_dict = {}
+
+for elem in oie_data:
+    oie_dict[int(elem[0])] = elem[1]
+
+oie_iqr_list = []
+for i in range(startYear, endYear):
+    #Add all the years that exist in the range
+    try:
+        oie_iqr_list.append(oie_dict[i])
+    except:
+        continue
+
+firstHalf = oie_iqr_list[:len(oie_iqr_list)//2]
+secondHalf = oie_iqr_list[len(oie_iqr_list)//2:]
+
+firstQuartile = firstHalf[:len(firstHalf)//2]
+secondQuartile = firstHalf[len(firstHalf)//2:]
+thirdQuartile = secondHalf[:len(secondHalf)//2]
+fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+if firstQuartile == [] or thirdQuartile == []:
+    oie_iqr = None
+else:
+    oie_q1 = np.median(firstQuartile)
+    oie_q3 = np.median(thirdQuartile)
+    oie_iqr = oie_q3 - oie_q1
+
+print("OIE IQR", oie_iqr)
+
+#Get the IQR for CSV
+csv_data = csv_roc.values.tolist()
+csv_dict = {}
+
+for elem in csv_data:
+    csv_dict[int(elem[0])] = elem[1]
+
+csv_iqr_list = []
+for i in range(startYear, endYear):
+    #Add all the years that exist in the range
+    try:
+        csv_iqr_list.append(csv_dict[i])
+    except:
+        continue
+
+firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
+secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
+
+firstQuartile = firstHalf[:len(firstHalf)//2]
+secondQuartile = firstHalf[len(firstHalf)//2:]
+thirdQuartile = secondHalf[:len(secondHalf)//2]
+fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+if firstQuartile == [] or thirdQuartile == []:
+    csv_iqr = None
+else:
+    csv_q1 = np.median(firstQuartile)
+    csv_q3 = np.median(thirdQuartile)
+    csv_iqr = csv_q3 - csv_q1
+
+print("csv_iq r", csv_iqr)
+
+
+#Get the IQR for National
+national_data = national_roc.values.tolist()
+national_dict = {}
+
+for elem in national_data:
+    national_dict[int(elem[0])] = elem[1]
+
+national_iqr_list = []
+for i in range(startYear, endYear):
+    #Add all the years that exist in the range
+    try:
+        national_iqr_list.append(national_dict[i])
+    except:
+        continue
+
+firstHalf = national_iqr_list[:len(national_iqr_list)//2]
+secondHalf = national_iqr_list[len(national_iqr_list)//2:]
+
+firstQuartile = firstHalf[:len(firstHalf)//2]
+secondQuartile = firstHalf[len(firstHalf)//2:]
+thirdQuartile = secondHalf[:len(secondHalf)//2]
+fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+if firstQuartile == [] or thirdQuartile == []:
+    national_iqr = None
+else:
+    national_q1 = np.median(firstQuartile)
+    national_q3 = np.median(thirdQuartile)
+    national_iqr = national_q3 - national_q1
+
+print("national_iqr ", national_iqr)
