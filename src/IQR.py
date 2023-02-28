@@ -85,13 +85,21 @@ fao_dict = {}
 for elem in fao_data:
     print("elem")
     print(elem)
-    fao_dict[int(elem[0])] = int(elem[1])
+    fao_dict[int(elem[0])] = elem[1]
 
 fao_iqr_list = []
 for i in range(startYear, endYear):
     fao_iqr_list.append(fao_dict[i])
 
-firstQuartile = fao_iqr_list[:(len(fao_iqr_list)//2)//2]
-secondQuartile = fao_iqr_list[(len(fao_iqr_list)//2)//2 : (len(fao_iqr_list)//2)]
-thirdQuartile = fao_iqr_list[(len(fao_iqr_list)//2) : ((len(fao_iqr_list)//2)//2)*3]
-fourthQuartile = fao_iqr_list[((len(fao_iqr_list)//2)//2)*3:]
+firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
+secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
+
+firstQuartile = firstHalf[:len(firstHalf)//2]
+secondQuartile = firstHalf[len(firstHalf)//2:]
+thirdQuartile = secondHalf[:len(secondHalf)//2]
+fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+print("First Quartile", firstQuartile)
+print("Second Quartile", secondQuartile)
+print("Third Quartile", thirdQuartile)
+print("Fourth Quartile", fourthQuartile)
