@@ -72,33 +72,21 @@ national_roc = helperFunctions.getROC(nationalData, "population")
 # Step 5: Find the path distance between each point in each data set
 mainDict = {}
 
-# Get every year for all tables
-years = []
-for year in fao_roc['year']:
-    years.append(str(year))
+# Get the only years that have multiple data points
+fao_years = fao_roc.year.unique().tolist()
+oie_years = oie_roc.year.unique().tolist()
+csv_years = csv_roc.year.unique().tolist()
+national_years = national_roc.year.unique().tolist()
 
-# Check the OIE data
-if oie_roc['year'].to_list()[0] not in years or oie_roc['year'].to_list()[-1] not in years:
-    for year in oie_roc['year']:
-        year = str(year)
-        if year not in years:
-            years.append(year)
+#Make sure all data is strings
+fao_years = [str(year) for year in fao_years]
+oie_years = [str(year) for year in oie_years]
+csv_years = [str(year) for year in csv_years]
+national_years = [str(year) for year in national_years]
 
-# Check the CSV data
-if csv_roc.shape[0] != 0:
-    if csv_roc['year'].to_list()[0] not in years or csv_roc['year'].to_list()[-1] not in years:
-        for year in csv_roc['year']:
-            year = str(year)
-            if year not in years:
-                years.append(year)
+years = fao_years + oie_years + csv_years + national_years
 
-# Check the National data
-if national_roc.shape[0] != 0:
-    if national_roc['year'].to_list()[0] not in years or national_roc['year'].to_list()[-1] not in years:
-        for year in national_roc['year']:
-            year = str(year)
-            if year not in years:
-                years.append(year)
+years = list({x for x in years if years.count(x) > 1})
 years.sort()
 
 # Create the dictionary
