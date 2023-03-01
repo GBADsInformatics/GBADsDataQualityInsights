@@ -46,21 +46,28 @@ oie_data = oie.formatOIEData(oie_data)
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
 
+new_csv_data = []
+for index, row in csv_data.iterrows():
+    if row['species'] == specie:
+        new_csv_data.append( [row['year'], row['population']] )
+
+csv_data = pd.DataFrame (new_csv_data, columns = ["year", "population"])
+
 # Step 4: Get National Data
 nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+
+new_national_data = []
+for index, row in nationalData.iterrows():
+    if row['species'] == specie:
+        new_national_data.append( [row['year'], row['population']] )
+
+nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
 # Get the rate of change of each point in each data set and put it into arrays
 fao_roc = helperFunctions.getROC(fao_data, "population")
 oie_roc = helperFunctions.getROC(oie_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
-
-
-# print("Rate of changes")
-# print("fao", fao_roc.tail())
-# print("oie", oie_roc.tail())
-# print("csv", csv_roc)
-# print("natonal", national_roc.tail())
 
 # Step 5: Find the path distance between each point in each data set
 mainDict = {}
@@ -162,7 +169,7 @@ for year in years:
         for value in fao_roc.values:
             if value[0] == year:
                 oie_distances.append(value[1] - oie_dist)
-        if len(oie_distances) == 2:
+        if len(oie_distances) == 1:
             oie_distances.append(None)
 
         #The oie column
@@ -207,33 +214,32 @@ for year in years:
             csv_year = value[0]
 
     if year == csv_year:
-
-            #The fao column
-            for value in fao_roc.values:
-                if value[0] == year:
-                    csv_distances.append(value[1] - csv_dist)
-            if len(csv_distances) == 2:
-                csv_distances.append(None)
-
-            #The oie column
-            for value in oie_roc.values:
-                if value[0] == year:
-                    csv_distances.append(csv_dist - value[1])
-            if len(csv_distances) == 3:
-                csv_distances.append(None)
-
-            #The csv column
+        #The fao column
+        for value in fao_roc.values:
+            if value[0] == year:
+                csv_distances.append(value[1] - csv_dist)
+        if len(csv_distances) == 1:
             csv_distances.append(None)
 
-            #The national column
-            for value in national_roc.values:
-                if value[0] == year:
-                    csv_distances.append(csv_dist - value[1])
-            if len(csv_distances) == 4:
-                csv_distances.append(None)
+        #The oie column
+        for value in oie_roc.values:
+            if value[0] == year:
+                csv_distances.append(csv_dist - value[1])
+        if len(csv_distances) == 2:
+            csv_distances.append(None)
 
-            #Set the column in the main df
-            mainDf.loc[2] = csv_distances
+        #The csv column
+        csv_distances.append(None)
+
+        #The national column
+        for value in national_roc.values:
+            if value[0] == year:
+                csv_distances.append(csv_dist - value[1])
+        if len(csv_distances) == 4:
+            csv_distances.append(None)
+
+        #Set the column in the main df
+        mainDf.loc[2] = csv_distances
 
     else:
         csv_distances.append(None)
@@ -259,21 +265,21 @@ for year in years:
         for value in fao_roc.values:
             if value[0] == year:
                 national_distances.append(value[1] - national_dist)
-        if len(national_distances) == 2:
+        if len(national_distances) == 1:
             national_distances.append(None)
 
         #The oie column
         for value in oie_roc.values:
             if value[0] == year:
                 national_distances.append(national_dist - value[1])
-        if len(national_distances) == 3:
+        if len(national_distances) == 2:
             national_distances.append(None)
 
         #The csv column
         for value in csv_roc.values:
             if value[0] == year:
                 national_distances.append(national_dist - value[1])
-        if len(national_distances) == 4:
+        if len(national_distances) == 3:
             national_distances.append(None)
 
         #The national column
@@ -290,10 +296,13 @@ for year in years:
 
         mainDf.loc[3] = national_distances
 
-    print("\n\nYear, ", year)
-    print("mainDf")
-    print(mainDf)
+    # print("\n\nYear, ", year)
+    # print("mainDf")
+    # print(mainDf)
 
     mainDict[year] = mainDf
 
 # print(mainDict)
+for year in years:
+    print("Year: ", year)
+    print(mainDict[year])
