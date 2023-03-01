@@ -51,10 +51,6 @@ oie_roc = helperFunctions.getROC(oie_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 
-# print("oie", oie_roc.tail())
-# print("csv", csv_roc)
-# print("natonal", national_roc.tail())
-
 # Get the year range from the user
 startYear = 1960
 endYear = 2019
