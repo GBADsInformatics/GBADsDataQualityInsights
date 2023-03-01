@@ -30,28 +30,25 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
     return df
 
-
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Cattle"
-country = "USA"
+specie = "Sheep"
+country = "Ethiopia"
 
 if specie == None:
     specie = species[0]
 
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
+    oie_data = oie.get_data("United%20States%20of%20America", specie)
 
 elif country == None:
     fao_data = fao.get_data(countries[0], specie)
+    oie_data = oie.get_data(countries[0], specie)
 
 else:
     fao_data = fao.get_data(country, specie)
-
-if country == "USA":
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
-else:
     oie_data = oie.get_data(country, specie)
 
 oie_data = oie.formatOIEData(oie_data)
@@ -104,7 +101,7 @@ except:
     nationalData = pd.DataFrame()
     nationalData_index_list = []
 
-FaoGrowthRate = helperFunctions.growthRate(fao_data, "population")
+FaoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
 
 FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
@@ -152,7 +149,7 @@ for i in range(len(data)):
 
 
 #OIE Data
-OieGrowthRate = helperFunctions.growthRate(oie_data, "population")
+OieGrowthRate = helperFunctions.growthRate(oie_data, "population", specie)
 
 OieGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
@@ -199,89 +196,100 @@ for i in range(len(data)):
         oie_outliers = pd.concat([oie_outliers, row], axis=0)
 
 #Census Data
-CensusGrowthRate = helperFunctions.growthRate(census_data, "population")
+CensusGrowthRate = helperFunctions.growthRate(census_data, "population", specie)
 
 CensusGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = CensusGrowthRate['growthRate'].tolist()
 
-fig3 = ff.create_distplot([data], ["Census"], bin_size=0.3)
-
-#Add the mean and standard deviation to the graph
-mean = np.mean(data)
-stdev_pluss = np.std(data)
-stdev_minus = np.std(data)*-1
-stdev_pluss2 = np.std(data) * 2
-stdev_minus2 = np.std(data)*-1 * 2
-stdev_pluss3 = np.std(data) * 3
-stdev_minus3 = np.std(data)*-1 * 3
-
-
-fig3.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'blue', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'red', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'red', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
-fig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
-
-fig3.update_layout(
-    title="Distribution of Growth Rates for Census Data",
-)
-
-# Get the values outside of the second standard deviation
+fig3 = None
 census_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
-for i in range(len(data)):
-    if CensusGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or CensusGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-        data = [CensusGrowthRate.iloc[i]['year'], CensusGrowthRate.iloc[i]['growthRate']]
-        row = pd.DataFrame([data], columns=['year', "growthRate"])
-        census_outliers = pd.concat([census_outliers, row], axis=0)
+try:
+    fig3 = ff.create_distplot([data], ["Census"], bin_size=0.3)
+
+    #Add the mean and standard deviation to the graph
+    mean = np.mean(data)
+    stdev_pluss = np.std(data)
+    stdev_minus = np.std(data)*-1
+    stdev_pluss2 = np.std(data) * 2
+    stdev_minus2 = np.std(data)*-1 * 2
+    stdev_pluss3 = np.std(data) * 3
+    stdev_minus3 = np.std(data)*-1 * 3
+
+    fig3.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'blue', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Green', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Green', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Orange', dash = 'dash'))
+    fig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Orange', dash = 'dash'))
+
+    fig3.update_layout(
+        title="Distribution of Growth Rates for Census Data",
+    )
+
+    # Get the values outside of the second standard deviation
+    for i in range(len(data)):
+        if CensusGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or CensusGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
+            data = [CensusGrowthRate.iloc[i]['year'], CensusGrowthRate.iloc[i]['growthRate']]
+            row = pd.DataFrame([data], columns=['year', "growthRate"])
+            census_outliers = pd.concat([census_outliers, row], axis=0)
+except Exception as e:
+    print(e)
+
 
 #National Data
-NationalGrowthRate = helperFunctions.growthRate(national_data, "population")
+NationalGrowthRate = helperFunctions.growthRate(national_data, "population", specie)
 
 NationalGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = NationalGrowthRate['growthRate'].tolist()
 
-fig4 = ff.create_distplot([data], ["National"], bin_size=0.3)
+fig4 = None
 
-#Add the mean and standard deviation to the graph
-mean = np.mean(data)
-stdev_pluss = np.std(data)
-stdev_minus = np.std(data)*-1
-stdev_pluss2 = np.std(data) * 2
-stdev_minus2 = np.std(data)*-1 * 2
-stdev_pluss3 = np.std(data) * 3
-stdev_minus3 = np.std(data)*-1 * 3
+try:
+    fig4 = ff.create_distplot([data], ["National"], bin_size=0.3)
+
+    #Add the mean and standard deviation to the graph
+    mean = np.mean(data)
+    stdev_pluss = np.std(data)
+    stdev_minus = np.std(data)*-1
+    stdev_pluss2 = np.std(data) * 2
+    stdev_minus2 = np.std(data)*-1 * 2
+    stdev_pluss3 = np.std(data) * 3
+    stdev_minus3 = np.std(data)*-1 * 3
 
 
-fig4.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'blue', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'red', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'red', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
-fig4.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
+    fig4.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'blue', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Green', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Green', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Orange', dash = 'dash'))
+    fig4.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Orange', dash = 'dash'))
 
-fig4.update_layout(
-    title="Distribution of Growth Rates for National Data",
-)
+    fig4.update_layout(
+        title="Distribution of Growth Rates for National Data",
+    )
+
+except Exception as e:
+    print(e)
+    fig
 
 # Get the values outside of the second standard deviation
 national_outliers = pd.DataFrame(columns=['year', "growthRate"])
@@ -331,8 +339,6 @@ app.layout = html.Div(children=[
         data=national_outliers.to_dict('records'),
     ),
 ])
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)

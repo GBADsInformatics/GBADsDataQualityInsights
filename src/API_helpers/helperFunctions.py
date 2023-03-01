@@ -23,10 +23,19 @@ def getROC(df, field):
 # df: The dataframe to get the growth rate for
 # field: The field or column name to get the growth rate for
 # Returns: A dataframe with the growth rate for each year, where growthRate is a float (%%.%%%%%%%%...)
-def growthRate(df, field):
+def growthRate(df, field, specie):
     growthRates = pd.DataFrame(columns=['year', "growthRate"])
+    print("df before = ", df)
+
+    if df.empty:
+        return growthRates
+
+    df = df[df['species'] == specie]
+    print("df: ", df)
 
     for i in range(len(df) - 1):
+        print("The data = ", df.iloc[i+1])
+
         rate = ((int(df.iloc[i+1][field]) - int(df.iloc[i][field]))/ int(df.iloc[i][field])) * 100
         data = [df.iloc[i]['year'], rate]
         row = pd.DataFrame([data], columns=['year', "growthRate"])
