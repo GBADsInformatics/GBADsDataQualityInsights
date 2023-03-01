@@ -144,7 +144,7 @@ fao_outliers = pd.DataFrame(columns=['year', "growthRate"])
 for i in range(len(data)):
     if FaoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or FaoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
         data = [FaoGrowthRate.iloc[i]['year'], FaoGrowthRate.iloc[i]['growthRate']]
-        row = pd.DataFrame([data], columns=['year', "growthRate"])
+        row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
         fao_outliers = pd.concat([fao_outliers, row], axis=0)
 
 
@@ -192,7 +192,7 @@ oie_outliers = pd.DataFrame(columns=['year', "growthRate"])
 for i in range(len(data)):
     if OieGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or OieGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
         data = [OieGrowthRate.iloc[i]['year'], OieGrowthRate.iloc[i]['growthRate']]
-        row = pd.DataFrame([data], columns=['year', "growthRate"])
+        row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
         oie_outliers = pd.concat([oie_outliers, row], axis=0)
 
 #Census Data
@@ -240,7 +240,7 @@ try:
     for i in range(len(data)):
         if CensusGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or CensusGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
             data = [CensusGrowthRate.iloc[i]['year'], CensusGrowthRate.iloc[i]['growthRate']]
-            row = pd.DataFrame([data], columns=['year', "growthRate"])
+            row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
             census_outliers = pd.concat([census_outliers, row], axis=0)
 except Exception as e:
     print(e)
@@ -297,7 +297,7 @@ national_outliers = pd.DataFrame(columns=['year', "growthRate"])
 for i in range(len(data)):
     if NationalGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or NationalGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
         data = [NationalGrowthRate.iloc[i]['year'], NationalGrowthRate.iloc[i]['growthRate']]
-        row = pd.DataFrame([data], columns=['year', "growthRate"])
+        row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
         national_outliers = pd.concat([national_outliers, row], axis=0)
 
 
@@ -338,6 +338,12 @@ app.layout = html.Div(children=[
             for i in national_outliers.columns],
         data=national_outliers.to_dict('records'),
     ),
+
+    html.Br(),
+    html.Br(),
+    html.H2(),
+    html.H2(children='.'),
+    html.H2(children='.'),
 ])
 
 if __name__ == '__main__':
