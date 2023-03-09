@@ -298,8 +298,6 @@ for year in years:
 
 
 # Need to use a network graph to visualize it
-
-
 # app = Dash(__name__)
 
 # app.layout = html.Div([
