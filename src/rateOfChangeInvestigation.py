@@ -21,37 +21,32 @@ import plotly.figure_factory as ff
 import numpy as np
 import plotly.graph_objects as go
 
-
-# Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
 country = "USA"
 
+# Step one: Get FAO Data and OIE Data
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
-else:
-    fao_data = fao.get_data(country, specie)
-
-fao_data = fao.formatFAOData(fao_data)
-
-# Step two: Get OIE Data
-if country == "USA":
     oie_data = oie.get_data("United%20States%20of%20America", specie)
 else:
+    fao_data = fao.get_data(country, specie)
     oie_data = oie.get_data(country, specie)
 
+fao_data = fao.formatFAOData(fao_data)
 oie_data = oie.formatOIEData(oie_data)
 
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
 
+#Only get the rows that have the correct specie
 new_csv_data = []
 for index, row in csv_data.iterrows():
     if row['species'] == specie:
         new_csv_data.append( [row['year'], row['population']] )
 
-csv_data = pd.DataFrame (new_csv_data, columns = ["year", "population"])
+csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
 
 # Step 4: Get National Data
 nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
@@ -77,6 +72,7 @@ fao_years = fao_roc.year.unique().tolist()
 oie_years = oie_roc.year.unique().tolist()
 csv_years = csv_roc.year.unique().tolist()
 national_years = national_roc.year.unique().tolist()
+
 
 #Make sure all data is strings
 fao_years = [str(year) for year in fao_years]
@@ -299,3 +295,23 @@ for year in years:
 for year in years:
     print("Year: ", year)
     print(mainDict[year])
+
+
+# Need to use a network graph to visualize it
+
+
+# app = Dash(__name__)
+
+# app.layout = html.Div([
+#     dcc.Graph(id='indicator-graphic'),
+
+#     dcc.Slider(
+#         year.min(),
+#         year.max(),
+#         step=None,
+#         id='year--slider',
+#         value=year.max(),
+#         marks={str(year): str(year) for year in year},
+
+#     )
+# ])

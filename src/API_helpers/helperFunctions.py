@@ -1,6 +1,6 @@
 import pandas as pd
 
-#Gets the rate of change for a given dataframe
+#Gets the rate of change (averaged across the time frame) for a given dataframe
 #Params
 #df: The dataframe to get the rate of change for
 #field: The field or column name to get the rate of change for
@@ -11,7 +11,9 @@ def getROC(df, field):
     for i in range(len(df) - 1):
         a = int(df.iloc[i+1][field])
         b = int(df.iloc[i][field])
-        rate = (a-b)/a * 100
+        a_year = int(df.iloc[i+1]['year'])
+        b_year = int(df.iloc[i]['year'])
+        rate = ((a-b)/a * 100) / (b_year - a_year)
         data = [df.iloc[i]['year'], rate]
         row = pd.DataFrame([data], columns=['year', "rateOfChange"])
         roc = pd.concat([roc, row], axis=0)
