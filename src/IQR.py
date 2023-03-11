@@ -236,10 +236,34 @@ national_lowerFence = national_q1 - (1.5 * national_iqr)
 # masterDf['CSV'] = csv_roc['rateOfChange']
 # masterDf['National'] = national_roc['rateOfChange']
 
+#Fao
+faoCopy = fao_roc['rateOfChange'].copy().to_frame()
+faoNewCol = ['FAO' for i in range(len(faoCopy))]
+faoCopy['Source'] = faoNewCol
 
-# Reference: https://plotly.com/python/box-plots/
-print("tips ")
-print(px.data.tips())
-print(" fao_roc['rateOfChange']", fao_roc['rateOfChange'])
-fig = px.box( fao_roc, y="rateOfChange")
+masterDf = faoCopy.copy()
+
+#oie
+oieCopy = oie_roc['rateOfChange'].copy().to_frame()
+oieNewCol = ['OIE' for i in range(len(oieCopy))]
+oieCopy['Source'] = oieNewCol
+
+masterDf = pd.concat([masterDf, oieCopy])
+
+#csv
+if csv_iqr:
+    csvCopy = csv_roc['rateOfChange'].copy().to_frame()
+    csvNewCol = ['CSV' for i in range(len(csvCopy))]
+    csvCopy['Source'] = csvNewCol
+
+    masterDf = pd.concat([masterDf, csvCopy])
+
+#National
+nationalCopy = national_roc['rateOfChange'].copy().to_frame()
+nationalNewCol = ['National' for i in range(len(nationalCopy))]
+nationalCopy['Source'] = nationalNewCol
+
+masterDf = pd.concat([masterDf, nationalCopy])
+
+fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
 fig.show()

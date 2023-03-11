@@ -27,6 +27,9 @@ Finally run
 or
 `python3 (or python) growthRates.py`
 
+or
+`python3 (or python) IQR.py`
+
 ## Data sources
 - FAO and WOAH/OIE come from the API
 - Census data from countries is in the S3 bucket (on AWS)
