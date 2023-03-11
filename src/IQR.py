@@ -20,8 +20,8 @@ import numpy as np
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Cattle"
-country = "USA"
+specie = "Goats"
+country = "South Africa"
 
 # Step one: Get FAO Data and OIE Data
 if country == "USA":
@@ -226,15 +226,12 @@ if csv_iqr:
     csv_upperFence = csv_q3 + (1.5 * csv_iqr)
     csv_lowerFence = csv_q1 - (1.5 * csv_iqr)
 
-national_upperFence = national_q3 + (1.5 * national_iqr)
-national_lowerFence = national_q1 - (1.5 * national_iqr)
+if national_iqr:
+    national_upperFence = national_q3 + (1.5 * national_iqr)
+    national_lowerFence = national_q1 - (1.5 * national_iqr)
 
-#Show box plots
-# masterDf = pd.DataFrame(columns=['FAO', 'OIE', 'CSV', 'National'])
-# masterDf['FAO'] = fao_roc['rateOfChange']
-# masterDf['OIE'] = oie_roc['rateOfChange']
-# masterDf['CSV'] = csv_roc['rateOfChange']
-# masterDf['National'] = national_roc['rateOfChange']
+
+# This next section is for the boxplots, you don't need the above data for this
 
 #Fao
 faoCopy = fao_roc['rateOfChange'].copy().to_frame()
@@ -251,16 +248,15 @@ oieCopy['Source'] = oieNewCol
 masterDf = pd.concat([masterDf, oieCopy])
 
 #csv
-if csv_iqr:
-    csvCopy = csv_roc['rateOfChange'].copy().to_frame()
-    csvNewCol = ['CSV' for i in range(len(csvCopy))]
-    csvCopy['Source'] = csvNewCol
+csvCopy = csv_roc['rateOfChange'].copy().to_frame()
+csvNewCol = ['UN Census Data' for i in range(len(csvCopy))]
+csvCopy['Source'] = csvNewCol
 
-    masterDf = pd.concat([masterDf, csvCopy])
+masterDf = pd.concat([masterDf, csvCopy])
 
 #National
 nationalCopy = national_roc['rateOfChange'].copy().to_frame()
-nationalNewCol = ['National' for i in range(len(nationalCopy))]
+nationalNewCol = ['National Census Bureau' for i in range(len(nationalCopy))]
 nationalCopy['Source'] = nationalNewCol
 
 masterDf = pd.concat([masterDf, nationalCopy])
