@@ -10,12 +10,9 @@
 import API_helpers.fao as fao
 import API_helpers.oie as oie
 import pandas as pd
-# from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import API_helpers.helperFunctions as helperFunctions
-# import plotly.figure_factory as ff
 import numpy as np
-# import plotly.graph_objects as go
 
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
