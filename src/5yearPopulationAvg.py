@@ -35,8 +35,8 @@ def groupBy5Years(data, startYear, endYear):
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Goats"
-country = "South Africa"
+specie = "Cattle"
+country = "USA"
 
 # Step one: Get FAO Data and OIE Data
 if country == "USA":
@@ -78,7 +78,8 @@ national_years = nationalData['year'].tolist()
 
 years = fao_years + oie_years + csv_years + national_years
 
-years = list({x for x in years if years.count(x) > 1})
+years = list(dict.fromkeys(years))
+years = [int(s) for s in years]
 years.sort()
 
 #Get each ones five year averages
@@ -86,11 +87,26 @@ fao_averages = []
 oie_averages = []
 csv_averages = []
 national_averages = []
+yearsArr = []
 
-for i in range(1, len(years)):
+for i in range(5, len(years)):
     if i % 5 == 0:
-        fao_averages.append(groupBy5Years(fao_data, fao_years[i -5], fao_years[i]))
-        oie_averages.append(groupBy5Years(oie_data, oie_years[i -5], oie_years[i]))
-        csv_averages.append(groupBy5Years(csv_data, csv_years[i -5], csv_years[i]))
-        national_averages.append(groupBy5Years(nationalData, national_years[i -5], national_years[i]))
+        fao_averages.append(groupBy5Years(fao_data, years[i - 5], years[i]))
+        oie_averages.append(groupBy5Years(oie_data, years[i - 5], years[i]))
+        csv_averages.append(groupBy5Years(csv_data, years[i - 5], years[i]))
+        national_averages.append(groupBy5Years(nationalData, years[i - 5], years[i]))
+        yearsArr.append(years[i])
 
+#Graph them
+masterDf = pd.DataFrame(columns = ["year", "fao", "oie", "census", "national",])
+masterDf['year'] = yearsArr
+masterDf['fao'] = fao_averages
+masterDf['oie'] = oie_averages
+masterDf['census'] = csv_averages
+masterDf['national'] = national_averages
+
+print("Master df")
+print(masterDf)
+
+# fig = px.hist( masterDf, y="year", x="Source", points="all")
+# fig.show()
