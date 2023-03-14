@@ -11,15 +11,19 @@ import pandas as pd
 import plotly.express as px
 import API_helpers.helperFunctions as helperFunctions
 import numpy as np
+import plotly.graph_objects as go
 
 
-def groupBy5Years(data, startYear, endYear):
+def groupBy5Years(data, startYear, endYear, type):
     # Group the data into 5 year intervals
     sum = 0
     counter = 0
     for year in range(int(startYear), int(endYear)):
         try:
-            row = data[data['year'] == str(year)]
+            if type == "String":
+                row = data[data['year'] == str(year)]
+            else:
+                row = data[data['year'] == int(year)]
             sum += int(row['population'])
             counter += 1
 
@@ -31,12 +35,11 @@ def groupBy5Years(data, startYear, endYear):
     return sum/counter
 
 
-
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
-country = "USA"
+country = "India"
 
 # Step one: Get FAO Data and OIE Data
 if country == "USA":
@@ -70,6 +73,9 @@ for index, row in nationalData.iterrows():
 
 nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
+print("csv Data: ")
+print(csv_data)
+
 #Get a list of all the years from each data source
 fao_years = fao_data['year'].tolist()
 oie_years = oie_data['year'].tolist()
@@ -89,13 +95,22 @@ csv_averages = []
 national_averages = []
 yearsArr = []
 
-for i in range(5, len(years)):
-    if i % 5 == 0:
-        fao_averages.append(groupBy5Years(fao_data, years[i - 5], years[i]))
-        oie_averages.append(groupBy5Years(oie_data, years[i - 5], years[i]))
-        csv_averages.append(groupBy5Years(csv_data, years[i - 5], years[i]))
-        national_averages.append(groupBy5Years(nationalData, years[i - 5], years[i]))
-        yearsArr.append(years[i])
+counter = 0
+
+if len(years) == 0:
+    print("No data found")
+    exit()
+
+for i in range(years[0], years[-1]):
+    if counter % 5 == 0 and counter != 0:
+        fao_averages.append(groupBy5Years(fao_data, i - 5, i, "String"))
+        oie_averages.append(groupBy5Years(oie_data, i - 5, i, "String"))
+        csv_averages.append(groupBy5Years(csv_data, i - 5, i, "Int"))
+        national_averages.append(groupBy5Years(nationalData, i - 5, i, "Int"))
+        yearsArr.append(i)
+
+    counter += 1
+
 
 #Graph them
 masterDf = pd.DataFrame(columns = ["year", "fao", "oie", "census", "national",])
@@ -105,8 +120,41 @@ masterDf['oie'] = oie_averages
 masterDf['census'] = csv_averages
 masterDf['national'] = national_averages
 
-print("Master df")
-print(masterDf)
+#Census and national are all zeros
+if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
+    fig = go.Figure([
+        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie'])
+    ])
 
-# fig = px.hist( masterDf, y="year", x="Source", points="all")
-# fig.show()
+#National is all zeros
+elif masterDf['national'].isnull().values.any():
+    fig = go.Figure([
+        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
+        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
+    ])
+
+#Census is all zeros
+elif masterDf['census'].isnull().values.any():
+    fig = go.Figure([
+        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
+        go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+    ])
+
+else:
+    fig = go.Figure([
+        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
+        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
+        go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+    ])
+
+fig.update_xaxes(title="Year")
+fig.update_yaxes(title="Population")
+
+print("len yearsArr: " + str(len(yearsArr)))
+
+fig.update_xaxes(nticks=len(yearsArr))
+fig.show()

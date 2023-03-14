@@ -60,7 +60,7 @@ def getFormattedCensusData(country, specie, species):
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
         csv_index_list = csv_data[(csv_data['species'] == specie)].index.tolist()
 
-    except:
+    except Exception as e:
         print("Error, count not find the correct csv file for the census data")
         csv_data = pd.DataFrame()
         csv_index_list = []
