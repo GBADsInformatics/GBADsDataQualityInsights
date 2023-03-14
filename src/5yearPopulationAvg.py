@@ -15,15 +15,20 @@ import numpy as np
 
 def groupBy5Years(data, startYear, endYear):
     # Group the data into 5 year intervals
-    grouped_data = []
-    for year in range(startYear, endYear):
-        # Get the average population for the 5 year interval
-        population = 0
-        for index, row in data.iterrows():
-            if row['year'] == year:
-                population += row['population']
-                grouped_data.append(population)
-                break
+    sum = 0
+    counter = 0
+    for year in range(int(startYear), int(endYear)):
+        try:
+            row = data[data['year'] == str(year)]
+            sum += int(row['population'])
+            counter += 1
+
+        except:
+            continue
+
+    if counter == 0:
+        return 0
+    return sum/counter
 
 
 
@@ -65,4 +70,27 @@ for index, row in nationalData.iterrows():
 
 nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
+#Get a list of all the years from each data source
+fao_years = fao_data['year'].tolist()
+oie_years = oie_data['year'].tolist()
+csv_years = csv_data['year'].tolist()
+national_years = nationalData['year'].tolist()
+
+years = fao_years + oie_years + csv_years + national_years
+
+years = list({x for x in years if years.count(x) > 1})
+years.sort()
+
+#Get each ones five year averages
+fao_averages = []
+oie_averages = []
+csv_averages = []
+national_averages = []
+
+for i in range(1, len(years)):
+    if i % 5 == 0:
+        fao_averages.append(groupBy5Years(fao_data, fao_years[i -5], fao_years[i]))
+        oie_averages.append(groupBy5Years(oie_data, oie_years[i -5], oie_years[i]))
+        csv_averages.append(groupBy5Years(csv_data, csv_years[i -5], csv_years[i]))
+        national_averages.append(groupBy5Years(nationalData, national_years[i -5], national_years[i]))
 

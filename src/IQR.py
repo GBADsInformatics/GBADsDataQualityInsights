@@ -63,21 +63,21 @@ national_roc = helperFunctions.getROC(nationalData, "population")
 startYear = 1960
 endYear = 2019
 
-# while True:
-#     startYear = input("What is your start year? ").strip()
-#     if startYear.isdigit():
-#         startYear = int(startYear)
-#         break
-#     else:
-#         print("Please enter a valid year")
+while True:
+    startYear = input("What is your start year? ").strip()
+    if startYear.isdigit():
+        startYear = int(startYear)
+        break
+    else:
+        print("Please enter a valid year")
 
-# while True:
-#     endYear = input("What is your end year? ").strip()
-#     if endYear.isdigit():
-#         endYear = int(endYear)
-#         break
-#     else:
-#         print("Please enter a valid year")
+while True:
+    endYear = input("What is your end year? ").strip()
+    if endYear.isdigit():
+        endYear = int(endYear)
+        break
+    else:
+        print("Please enter a valid year")
 
 #Get the IQR for FAO
 fao_data = fao_roc.values.tolist()
