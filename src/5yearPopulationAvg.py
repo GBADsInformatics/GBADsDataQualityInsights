@@ -38,8 +38,8 @@ def groupBy5Years(data, startYear, endYear, type):
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Cattle"
-country = "India"
+specie = "Chickens"
+country = "USA"
 
 # Step one: Get FAO Data and OIE Data
 if country == "USA":
@@ -73,8 +73,6 @@ for index, row in nationalData.iterrows():
 
 nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
-print("csv Data: ")
-print(csv_data)
 
 #Get a list of all the years from each data source
 fao_years = fao_data['year'].tolist()
@@ -111,14 +109,41 @@ for i in range(years[0], years[-1]):
 
     counter += 1
 
+#Find the percent changes
+fao_percent_change = []
+oie_percent_change = []
+csv_percent_change = []
+national_percent_change = []
+yearsArr.pop(0)
+
+for i in range(1, len(fao_averages)):
+    if fao_averages[i-1] == 0:
+        fao_percent_change.append(0)
+    else:
+        fao_percent_change.append( ((fao_averages[i] - fao_averages[i-1]) / fao_averages[i-1]) * 100 )
+
+    if oie_averages[i-1] == 0:
+        oie_percent_change.append(0)
+    else:
+        oie_percent_change.append( ((oie_averages[i] - oie_averages[i-1]) / oie_averages[i-1]) * 100 )
+
+    if csv_averages[i-1] == 0:
+        csv_percent_change.append(0)
+    else:
+        csv_percent_change.append( ((csv_averages[i] - csv_averages[i-1]) / csv_averages[i-1]) * 100 )
+
+    if national_averages[i-1] == 0:
+        national_percent_change.append(0)
+    else:
+        national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
 #Graph them
 masterDf = pd.DataFrame(columns = ["year", "fao", "oie", "census", "national",])
+masterDf['fao'] = fao_percent_change
+masterDf['oie'] = oie_percent_change
+masterDf['census'] = csv_percent_change
+masterDf['national'] = national_percent_change
 masterDf['year'] = yearsArr
-masterDf['fao'] = fao_averages
-masterDf['oie'] = oie_averages
-masterDf['census'] = csv_averages
-masterDf['national'] = national_averages
 
 #Census and national are all zeros
 if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
@@ -152,7 +177,7 @@ else:
     ])
 
 fig.update_xaxes(title="Year")
-fig.update_yaxes(title="Population")
+fig.update_yaxes(title="Percent Increase")
 
 print("len yearsArr: " + str(len(yearsArr)))
 
