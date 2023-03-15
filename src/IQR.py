@@ -17,8 +17,8 @@ import numpy as np
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Goats"
-country = "South Africa"
+specie = "Sheep"
+country = "Canada"
 
 # Step one: Get FAO Data and woah Data
 if country == "USA":
@@ -29,7 +29,7 @@ else:
     woah_data = woah.get_data(country, specie)
 
 fao_data = fao.formatFAOData(fao_data)
-woah_data = woah.formatWoahhData(woah_data)
+woah_data = woah.formatWoahData(woah_data)
 
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)

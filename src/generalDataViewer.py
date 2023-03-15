@@ -90,7 +90,7 @@ def update_line_chart(specie, country):
     else:
         woah_data = woah.get_data(country, specie)
 
-    woah_data = woah.formatWOAHData(woah_data)
+    woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
     csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)

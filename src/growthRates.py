@@ -51,7 +51,7 @@ else:
     fao_data = fao.get_data(country, specie)
     woah_data = woah.get_data(country, specie)
 
-woah_data = woah.formatWOAHData(woah_data)
+woah_data = woah.formatWoahData(woah_data)
 
 census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
 
@@ -135,7 +135,7 @@ fig.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref
             line = dict(color = 'Orange', dash = 'dash'))
 
 fig.update_layout(
-    title="Distribution of Growth Rates for FAO Data",
+    title="Distribution of Growth Rates for FAO Data for " + specie + " in " + country,
 )
 
 # Get the values outside of the second standard deviation
@@ -183,7 +183,7 @@ fig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xre
             line = dict(color = 'Orange', dash = 'dash'))
 
 fig2.update_layout(
-    title="Distribution of Growth Rates for WOAH Data",
+    title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
 )
 
 # Get the values outside of the second standard deviation
@@ -233,7 +233,7 @@ try:
                 line = dict(color = 'Orange', dash = 'dash'))
 
     fig3.update_layout(
-        title="Distribution of Growth Rates for Census Data",
+        title="Distribution of Growth Rates for Census Data for " + specie + " in " + country,
     )
 
     # Get the values outside of the second standard deviation
@@ -286,7 +286,7 @@ try:
                 line = dict(color = 'Orange', dash = 'dash'))
 
     fig4.update_layout(
-        title="Distribution of Growth Rates for National Data",
+        title="Distribution of Growth Rates for National Data for " + specie + " in " + country,
     )
 
 except Exception as e:
