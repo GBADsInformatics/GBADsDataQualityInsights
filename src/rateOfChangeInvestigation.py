@@ -13,7 +13,7 @@
 #Answer is looking not great as not enough data to make a good conclusion. Each year has tops 2 countries with data for it
 
 import API_helpers.fao as fao
-import API_helpers.oie as oie
+import API_helpers.woah as woah
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
@@ -27,16 +27,16 @@ species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
 country = "USA"
 
-# Step one: Get FAO Data and OIE Data
+# Step one: Get FAO Data and WOAH Data
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
+    woah_data = woah.get_data("United%20States%20of%20America", specie)
 else:
     fao_data = fao.get_data(country, specie)
-    oie_data = oie.get_data(country, specie)
+    woah_data = woah.get_data(country, specie)
 
 fao_data = fao.formatFAOData(fao_data)
-oie_data = oie.formatOIEData(oie_data)
+woah_data = woah.formatWoahData(woah_data)
 
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
@@ -61,7 +61,7 @@ nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"]
 
 # Get the rate of change of each point in each data set and put it into arrays
 fao_roc = helperFunctions.getROC(fao_data, "population")
-oie_roc = helperFunctions.getROC(oie_data, "population")
+woah_roc = helperFunctions.getROC(woah_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 
@@ -70,18 +70,18 @@ mainDict = {}
 
 # Get the only years that have multiple data points
 fao_years = fao_roc.year.unique().tolist()
-oie_years = oie_roc.year.unique().tolist()
+woah_years = woah_roc.year.unique().tolist()
 csv_years = csv_roc.year.unique().tolist()
 national_years = national_roc.year.unique().tolist()
 
 
 #Make sure all data is strings
 fao_years = [str(year) for year in fao_years]
-oie_years = [str(year) for year in oie_years]
+woah_years = [str(year) for year in woah_years]
 csv_years = [str(year) for year in csv_years]
 national_years = [str(year) for year in national_years]
 
-years = fao_years + oie_years + csv_years + national_years
+years = fao_years + woah_years + csv_years + national_years
 
 years = list({x for x in years if years.count(x) > 1})
 years.sort()
@@ -89,7 +89,7 @@ years.sort()
 # Create the dictionary
 for year in years:
     # This df is for each year in the table
-    mainDf = pd.DataFrame(columns=["elen", "fao", "oie", "csv", "national"])
+    mainDf = pd.DataFrame(columns=["elen", "fao", "woah", "csv", "national"])
 
     # Set the elem column to fao
     fao_distances = ['fao']
@@ -108,8 +108,8 @@ for year in years:
         #The fao column
         fao_distances.append(None)
 
-        #The oie column
-        for value in oie_roc.values:
+        #The woah column
+        for value in woah_roc.values:
             if str(value[0]) == year:
                 fao_distances.append(fao_dist - value[1])
                 break
@@ -140,53 +140,53 @@ for year in years:
 
     mainDf.loc[0] = fao_distances
 
-    # All the OIE distances
-    oie_distances = ['oie']
+    # All the WOAH distances
+    woah_distances = ['woah']
 
-    oie_dist = 0
-    oie_year = 0
+    woah_dist = 0
+    woah_year = 0
 
-    for value in oie_roc.values:
+    for value in woah_roc.values:
         if str(value[0]) == year:
-            oie_dist = value[1]
-            oie_year = str(value[0])
+            woah_dist = value[1]
+            woah_year = str(value[0])
 
-    if year == oie_year:
+    if year == woah_year:
 
         #The fao column
         for value in fao_roc.values:
             if str(value[0]) == year:
-                oie_distances.append(value[1] - oie_dist)
+                woah_distances.append(value[1] - woah_dist)
                 break
-        if len(oie_distances) == 1:
-            oie_distances.append(None)
+        if len(woah_distances) == 1:
+            woah_distances.append(None)
 
-        #The oie column
-        oie_distances.append(None)
+        #The woah column
+        woah_distances.append(None)
 
         #The csv column
         for value in csv_roc.values:
             if str(value[0]) == year:
-                oie_distances.append(oie_dist - value[1])
+                woah_distances.append(woah_dist - value[1])
                 break
-        if len(oie_distances) == 3:
-            oie_distances.append(None)
+        if len(woah_distances) == 3:
+            woah_distances.append(None)
 
         #The national column
         for value in national_roc.values:
             if str(value[0]) == year:
-                oie_distances.append(oie_dist - value[1])
+                woah_distances.append(woah_dist - value[1])
                 break
-        if len(oie_distances) == 4:
-            oie_distances.append(None)
+        if len(woah_distances) == 4:
+            woah_distances.append(None)
 
     else:
-        oie_distances.append(None)
-        oie_distances.append(None)
-        oie_distances.append(None)
-        oie_distances.append(None)
+        woah_distances.append(None)
+        woah_distances.append(None)
+        woah_distances.append(None)
+        woah_distances.append(None)
 
-    mainDf.loc[1] = oie_distances
+    mainDf.loc[1] = woah_distances
 
 
     # All the CSV distances
@@ -210,8 +210,8 @@ for year in years:
         if len(csv_distances) == 1:
             csv_distances.append(None)
 
-        #The oie column
-        for value in oie_roc.values:
+        #The woah column
+        for value in woah_roc.values:
             if str(value[0]) == year:
                 csv_distances.append(csv_dist - value[1])
                 break
@@ -259,8 +259,8 @@ for year in years:
         if len(national_distances) == 1:
             national_distances.append(None)
 
-        #The oie column
-        for value in oie_roc.values:
+        #The woah column
+        for value in woah_roc.values:
             if str(value[0]) == year:
                 national_distances.append(national_dist - value[1])
                 break

@@ -6,7 +6,7 @@
 # The averages are then plotted on a histogram.
 
 import API_helpers.fao as fao
-import API_helpers.oie as oie
+import API_helpers.woah as woah
 import pandas as pd
 import plotly.express as px
 import API_helpers.helperFunctions as helperFunctions
@@ -38,19 +38,19 @@ def groupBy5Years(data, startYear, endYear, type):
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Chickens"
-country = "USA"
+specie = "Sheep"
+country = "Ethiopia"
 
-# Step one: Get FAO Data and OIE Data
+# Step one: Get FAO Data and WOAH Data
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
+    woah_data = woah.get_data("United%20States%20of%20America", specie)
 else:
     fao_data = fao.get_data(country, specie)
-    oie_data = oie.get_data(country, specie)
+    woah_data = woah.get_data(country, specie)
 
 fao_data = fao.formatFAOData(fao_data)
-oie_data = oie.formatOIEData(oie_data)
+woah_data = woah.formatwoahData(woah_data)
 
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
@@ -76,11 +76,11 @@ nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"]
 
 #Get a list of all the years from each data source
 fao_years = fao_data['year'].tolist()
-oie_years = oie_data['year'].tolist()
+woah_years = woah_data['year'].tolist()
 csv_years = csv_data['year'].tolist()
 national_years = nationalData['year'].tolist()
 
-years = fao_years + oie_years + csv_years + national_years
+years = fao_years + woah_years + csv_years + national_years
 
 years = list(dict.fromkeys(years))
 years = [int(s) for s in years]
@@ -88,7 +88,7 @@ years.sort()
 
 #Get each ones five year averages
 fao_averages = []
-oie_averages = []
+woah_averages = []
 csv_averages = []
 national_averages = []
 yearsArr = []
@@ -102,7 +102,7 @@ if len(years) == 0:
 for i in range(years[0], years[-1]):
     if counter % 5 == 0 and counter != 0:
         fao_averages.append(groupBy5Years(fao_data, i - 5, i, "String"))
-        oie_averages.append(groupBy5Years(oie_data, i - 5, i, "String"))
+        woah_averages.append(groupBy5Years(woah_data, i - 5, i, "String"))
         csv_averages.append(groupBy5Years(csv_data, i - 5, i, "Int"))
         national_averages.append(groupBy5Years(nationalData, i - 5, i, "Int"))
         yearsArr.append(i)
@@ -111,36 +111,36 @@ for i in range(years[0], years[-1]):
 
 #Find the percent changes
 fao_percent_change = []
-oie_percent_change = []
+woah_percent_change = []
 csv_percent_change = []
 national_percent_change = []
 yearsArr.pop(0)
 
 for i in range(1, len(fao_averages)):
-    if fao_averages[i-1] == 0:
+    if fao_averages[i-1] == 0 or fao_averages[i] == 0:
         fao_percent_change.append(0)
     else:
         fao_percent_change.append( ((fao_averages[i] - fao_averages[i-1]) / fao_averages[i-1]) * 100 )
 
-    if oie_averages[i-1] == 0:
-        oie_percent_change.append(0)
+    if woah_averages[i-1] == 0 or woah_averages[i] == 0:
+        woah_percent_change.append(0)
     else:
-        oie_percent_change.append( ((oie_averages[i] - oie_averages[i-1]) / oie_averages[i-1]) * 100 )
+        woah_percent_change.append( ((woah_averages[i] - woah_averages[i-1]) / woah_averages[i-1]) * 100 )
 
-    if csv_averages[i-1] == 0:
+    if csv_averages[i-1] == 0 or csv_averages[i] == 0:
         csv_percent_change.append(0)
     else:
         csv_percent_change.append( ((csv_averages[i] - csv_averages[i-1]) / csv_averages[i-1]) * 100 )
 
-    if national_averages[i-1] == 0:
+    if national_averages[i-1] == 0 or national_averages[i] == 0:
         national_percent_change.append(0)
     else:
         national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
 #Graph them
-masterDf = pd.DataFrame(columns = ["year", "fao", "oie", "census", "national",])
+masterDf = pd.DataFrame(columns = ["year", "fao", "woah", "census", "national",])
 masterDf['fao'] = fao_percent_change
-masterDf['oie'] = oie_percent_change
+masterDf['woah'] = woah_percent_change
 masterDf['census'] = csv_percent_change
 masterDf['national'] = national_percent_change
 masterDf['year'] = yearsArr
@@ -149,7 +149,7 @@ masterDf['year'] = yearsArr
 if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
-        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie'])
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah'])
     ])
 
 #National is all zeros
@@ -157,27 +157,27 @@ elif masterDf['national'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
 
 #Census is all zeros
 elif masterDf['census'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
-        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
 
 else:
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
-        go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        go.Bar(name='OIE', x=masterDf['year'], y=masterDf['oie']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+        go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
 
 fig.update_xaxes(title="Year")
-fig.update_yaxes(title="Percent Increase")
+fig.update_yaxes(title="Percent Change")
 
 print("len yearsArr: " + str(len(yearsArr)))
 

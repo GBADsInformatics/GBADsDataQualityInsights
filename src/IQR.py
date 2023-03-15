@@ -8,7 +8,7 @@
 # Then add error bars around the data to visualize where approximate outliers are.
 
 import API_helpers.fao as fao
-import API_helpers.oie as oie
+import API_helpers.woah as woah
 import pandas as pd
 import plotly.express as px
 import API_helpers.helperFunctions as helperFunctions
@@ -20,16 +20,16 @@ species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Goats"
 country = "South Africa"
 
-# Step one: Get FAO Data and OIE Data
+# Step one: Get FAO Data and woah Data
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
+    woah_data = woah.get_data("United%20States%20of%20America", specie)
 else:
     fao_data = fao.get_data(country, specie)
-    oie_data = oie.get_data(country, specie)
+    woah_data = woah.get_data(country, specie)
 
 fao_data = fao.formatFAOData(fao_data)
-oie_data = oie.formatOIEData(oie_data)
+woah_data = woah.formatWoahhData(woah_data)
 
 # Step 3: Get Census Data
 csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
@@ -54,7 +54,7 @@ nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"]
 
 # Get the rate of change of each point in each data set and put it into arrays
 fao_roc = helperFunctions.getROC(fao_data, "population")
-oie_roc = helperFunctions.getROC(oie_data, "population")
+woah_roc = helperFunctions.getROC(woah_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
@@ -111,23 +111,23 @@ else:
 
 print("FAO IQR", fao_iqr)
 
-#Get the IQR for OIE
-oie_data = oie_roc.values.tolist()
-oie_dict = {}
+#Get the IQR for woah
+woah_data = woah_roc.values.tolist()
+woah_dict = {}
 
-for elem in oie_data:
-    oie_dict[int(elem[0])] = elem[1]
+for elem in woah_data:
+    woah_dict[int(elem[0])] = elem[1]
 
-oie_iqr_list = []
+woah_iqr_list = []
 for i in range(startYear, endYear):
     #Add all the years that exist in the range
     try:
-        oie_iqr_list.append(oie_dict[i])
+        woah_iqr_list.append(woah_dict[i])
     except:
         continue
 
-firstHalf = oie_iqr_list[:len(oie_iqr_list)//2]
-secondHalf = oie_iqr_list[len(oie_iqr_list)//2:]
+firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
+secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
 
 firstQuartile = firstHalf[:len(firstHalf)//2]
 secondQuartile = firstHalf[len(firstHalf)//2:]
@@ -135,13 +135,13 @@ thirdQuartile = secondHalf[:len(secondHalf)//2]
 fourthQuartile = secondHalf[len(secondHalf)//2:]
 
 if firstQuartile == [] or thirdQuartile == []:
-    oie_iqr = None
+    woah_iqr = None
 else:
-    oie_q1 = np.median(firstQuartile)
-    oie_q3 = np.median(thirdQuartile)
-    oie_iqr = oie_q3 - oie_q1
+    woah_q1 = np.median(firstQuartile)
+    woah_q3 = np.median(thirdQuartile)
+    woah_iqr = woah_q3 - woah_q1
 
-print("OIE IQR", oie_iqr)
+print("WOAH IQR", woah_iqr)
 
 #Get the IQR for CSV
 csv_data = csv_roc.values.tolist()
@@ -216,8 +216,8 @@ print("national_iqr ", national_iqr)
 fao_upperFence = fao_q3 + (1.5 * fao_iqr)
 fao_lowerFence = fao_q1 - (1.5 * fao_iqr)
 
-oie_upperFence = oie_q3 + (1.5 * oie_iqr)
-oie_lowerFence = oie_q1 - (1.5 * oie_iqr)
+woah_upperFence = woah_q3 + (1.5 * woah_iqr)
+woah_lowerFence = woah_q1 - (1.5 * woah_iqr)
 
 if csv_iqr:
     csv_upperFence = csv_q3 + (1.5 * csv_iqr)
@@ -237,12 +237,12 @@ faoCopy['Source'] = faoNewCol
 
 masterDf = faoCopy.copy()
 
-#oie
-oieCopy = oie_roc['rateOfChange'].copy().to_frame()
-oieNewCol = ['OIE' for i in range(len(oieCopy))]
-oieCopy['Source'] = oieNewCol
+#woah
+woahCopy = woah_roc['rateOfChange'].copy().to_frame()
+woahNewCol = ['WOAH' for i in range(len(woahCopy))]
+woahCopy['Source'] = woahNewCol
 
-masterDf = pd.concat([masterDf, oieCopy])
+masterDf = pd.concat([masterDf, woahCopy])
 
 #csv
 csvCopy = csv_roc['rateOfChange'].copy().to_frame()

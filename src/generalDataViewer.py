@@ -2,7 +2,7 @@
 # Written By Ian McKechnie
 # Last Updated: Tuesday Dec 20, 2022
 import API_helpers.fao as fao
-import API_helpers.oie as oie
+import API_helpers.woah as woah
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
@@ -15,7 +15,7 @@ species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 app = Dash(__name__)
 
 app.layout = html.Div(children=[
-    html.H1(children='Data Quality Comparison for FAO, OIE, Census Data, and National Sources'),
+    html.H1(children='Data Quality Comparison for FAO, WOAH, Census Data, and National Sources'),
 
     dcc.Graph(id='graph'),
 
@@ -84,13 +84,13 @@ def update_line_chart(specie, country):
 
     fao_data = fao.formatFAOData(fao_data)
 
-    # Step two: Get OIE data
+    # Step two: Get woah data
     if country == "USA":
-        oie_data = oie.get_data("United%20States%20of%20America", specie)
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
     else:
-        oie_data = oie.get_data(country, specie)
+        woah_data = woah.get_data(country, specie)
 
-    oie_data = oie.formatOIEData(oie_data)
+    woah_data = woah.formatWOAHData(woah_data)
 
     # Step 3: Get Census data
     csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
@@ -99,8 +99,8 @@ def update_line_chart(specie, country):
     nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     # Build a master dataframe
-    #master_df = pd.concat([fao_data, oie_data, csv_data.iloc, nationalData.iloc])
-    master_df = pd.concat([fao_data, oie_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
+    #master_df = pd.concat([fao_data, woah_data, csv_data.iloc, nationalData.iloc])
+    master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
     # Build the plotly graph
     fig = px.line(master_df,

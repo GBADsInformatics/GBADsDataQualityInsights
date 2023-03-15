@@ -6,11 +6,11 @@ def get_data(country, species):
     response = requests.get(url)
     return response.text
 
-def formatOIEData(oie_data):
-    oie_data = str2frame(oie_data, "oie")
-    oie_data['source'] = "oie"
-    oie_data = oie_data.drop(columns=['country'])
-    oie_data = oie_data.replace('"','', regex=True)
-    oie_data.sort_values(by=['year'], inplace=True)
+def formatWoahData(woah_data):
+    woah_data = str2frame(woah_data, "oie")
+    woah_data['source'] = "woah"
+    woah_data = woah_data.drop(columns=['country'])
+    woah_data = woah_data.replace('"','', regex=True)
+    woah_data.sort_values(by=['year'], inplace=True)
 
-    return oie_data
+    return woah_data

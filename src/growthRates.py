@@ -10,7 +10,7 @@
 
 
 import API_helpers.fao as fao
-import API_helpers.oie as oie
+import API_helpers.woah as woah
 import API_helpers.helperFunctions
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output, dash_table
@@ -26,32 +26,32 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
     dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
     if source == "fao":
         df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
-    elif source == "oie":
+    elif source == "woah":
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
     return df
 
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Sheep"
-country = "Ethiopia"
+specie = "Cattle"
+country = "USA"
 
 if specie == None:
     specie = species[0]
 
 if country == "USA":
     fao_data = fao.get_data("United%20States%20of%20America", specie)
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
+    woah_data = woah.get_data("United%20States%20of%20America", specie)
 
 elif country == None:
     fao_data = fao.get_data(countries[0], specie)
-    oie_data = oie.get_data(countries[0], specie)
+    woah_data = woah.get_data(countries[0], specie)
 
 else:
     fao_data = fao.get_data(country, specie)
-    oie_data = oie.get_data(country, specie)
+    woah_data = woah.get_data(country, specie)
 
-oie_data = oie.formatOIEData(oie_data)
+woah_data = woah.formatWOAHData(woah_data)
 
 census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
 
@@ -65,16 +65,16 @@ fao_data = fao_data.drop(columns=['iso3', "country"])
 fao_data = fao_data.replace('"','', regex=True)
 fao_data.sort_values(by=['year'], inplace=True)
 
-# Step two: Get OIE data
+# Step two: Get woah data
 if country == "USA":
-    oie_data = oie.get_data("United%20States%20of%20America", specie)
+    woah_data = woah.get_data("United%20States%20of%20America", specie)
 else:
-    oie_data = oie.get_data(country, specie)
-oie_data = str2frame(oie_data, "oie")
-oie_data['source'] = "oie"
-oie_data = oie_data.drop(columns=['country'])
-oie_data = oie_data.replace('"','', regex=True)
-oie_data.sort_values(by=['year'], inplace=True)
+    woah_data = woah.get_data(country, specie)
+woah_data = str2frame(woah_data, "woah")
+woah_data['source'] = "woah"
+woah_data = woah_data.drop(columns=['country'])
+woah_data = woah_data.replace('"','', regex=True)
+woah_data.sort_values(by=['year'], inplace=True)
 
 # Step 3: Get Census data
 try:
@@ -148,14 +148,14 @@ for i in range(len(data)):
         fao_outliers = pd.concat([fao_outliers, row], axis=0)
 
 
-#OIE Data
-OieGrowthRate = helperFunctions.growthRate(oie_data, "population", specie)
+#WOAH Data
+woahGrowthRate = helperFunctions.growthRate(woah_data, "population", specie)
 
-OieGrowthRate.sort_values(by=['growthRate'], inplace=True)
+woahGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
-data = OieGrowthRate['growthRate'].tolist()
+data = woahGrowthRate['growthRate'].tolist()
 
-fig2 = ff.create_distplot([data], ["OIE"], bin_size=0.3)
+fig2 = ff.create_distplot([data], ["woah"], bin_size=0.3)
 
 #Add the mean and standard deviation to the graph
 mean = np.mean(data)
@@ -183,17 +183,17 @@ fig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xre
             line = dict(color = 'Orange', dash = 'dash'))
 
 fig2.update_layout(
-    title="Distribution of Growth Rates for OIE Data",
+    title="Distribution of Growth Rates for WOAH Data",
 )
 
 # Get the values outside of the second standard deviation
-oie_outliers = pd.DataFrame(columns=['year', "growthRate"])
+woah_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
 for i in range(len(data)):
-    if OieGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or OieGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-        data = [OieGrowthRate.iloc[i]['year'], OieGrowthRate.iloc[i]['growthRate']]
+    if woahGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or woahGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
+        data = [woahGrowthRate.iloc[i]['year'], woahGrowthRate.iloc[i]['growthRate']]
         row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
-        oie_outliers = pd.concat([oie_outliers, row], axis=0)
+        woah_outliers = pd.concat([woah_outliers, row], axis=0)
 
 #Census Data
 CensusGrowthRate = helperFunctions.growthRate(census_data, "population", specie)
@@ -267,6 +267,8 @@ try:
     stdev_pluss3 = np.std(data) * 3
     stdev_minus3 = np.std(data)*-1 * 3
 
+    print("mean = ", mean)
+
 
     fig4.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'blue', dash = 'dash'))
@@ -305,7 +307,7 @@ for i in range(len(data)):
 app = Dash(__name__)
 
 app.layout = html.Div(children=[
-    html.H1(children='Comparing Growth Rates for FAO, OIE, Census Data, and National Sources, Showing Outliers'),
+    html.H1(children='Comparing Growth Rates for FAO, WOAH, Census Data, and National Sources, Showing Outliers'),
 
     dcc.Graph(id='graph', figure=fig),
     dash_table.DataTable(
@@ -319,8 +321,8 @@ app.layout = html.Div(children=[
     dash_table.DataTable(
         id='table2',
         columns=[{"name": i, "id": i}
-            for i in oie_outliers.columns],
-        data=oie_outliers.to_dict('records'),
+            for i in woah_outliers.columns],
+        data=woah_outliers.to_dict('records'),
     ),
 
     dcc.Graph(id='graph3', figure=fig3),
