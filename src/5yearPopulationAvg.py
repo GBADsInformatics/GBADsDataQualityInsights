@@ -39,7 +39,7 @@ def groupBy5Years(data, startYear, endYear, type):
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
-country = "Canada"
+country = "USA"
 
 # Step one: Get FAO Data and WOAH Data
 if country == "USA":
@@ -145,7 +145,10 @@ masterDf['census'] = csv_percent_change
 masterDf['national'] = national_percent_change
 masterDf['year'] = yearsArr
 
-#Census and national are all zeros
+print("csv_percent_change")
+print(csv_percent_change)
+
+# Census and national are all zeros
 if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
@@ -179,7 +182,13 @@ else:
 fig.update_xaxes(title="Year")
 fig.update_yaxes(title="Percent Change")
 
-print("len yearsArr: " + str(len(yearsArr)))
+fig.update_layout(
+    xaxis = dict(
+    tickmode='array', #change 1
+    tickvals = yearsArr, #change 2
+    ticktext = yearsArr, #change 3
+    ),
+    font=dict(color="black"))
 
 fig.update_xaxes(nticks=len(yearsArr))
 fig.show()
