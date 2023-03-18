@@ -10,6 +10,26 @@ The goal is to present this data in plots and tables with points, lines, and err
 
 ![Alt text](lib/graphExample.png?raw=true "Example")
 
+## To Run The DashBoard
+Make sure you have pip/pip3 installed
+
+Run
+
+`pip3 (or pip) install -r requirements.txt`
+
+Then run
+
+`cd src`
+
+Finally run
+`python3 (or python) generalDatViewer.py`
+
+or
+`python3 (or python) growthRates.py`
+
+or
+`python3 (or python) IQR.py`
+
 ## Data sources
 - FAO and WOAH/OIE come from the API
 - Census data from countries is in the S3 bucket (on AWS)
@@ -25,7 +45,7 @@ The goal is to present this data in plots and tables with points, lines, and err
 - Botswana
 - Egypt
 - South Africa
-- Idndonisia
+- Indonesia
 - China
 - Australia
 - New Zealand
