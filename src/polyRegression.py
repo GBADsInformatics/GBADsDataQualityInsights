@@ -1,15 +1,16 @@
-# Census Data Quality Research
-# Written By Ian McKechnie
-# Last Updated: Tuesday Dec 20, 2022
+# Using Polynomial Regression to Predict Animal Populations
+
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import API_helpers.helperFunctions
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
+import numpy as np
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+sources = ['BAD']
 
 #Build a Plotly graph around the data
 app = Dash(__name__)
@@ -31,6 +32,13 @@ app.layout = html.Div(children=[
         species,
         value=species[0],
         id="species_checklist",
+    ),
+
+    html.H3(children='Source for Prediction'),
+    dcc.Dropdown(
+        sources,
+        value=sources[0],
+        id="sources_checklist",
     ),
 ])
 
@@ -61,6 +69,15 @@ def update_species_checklist(country):
 
     return species
 
+
+@app.callback(
+    Output("species_checklist", "value"),
+    Input("species_checklist", "options"),
+)
+def populate_dropDown(arr):
+    return arr
+
+
 @app.callback(
     Output("graph", "figure"),
     Input("species_checklist", "value"),
@@ -69,6 +86,7 @@ def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+    sources = []
 
     if specie == None:
         specie = species[0]
@@ -101,6 +119,23 @@ def update_line_chart(specie, country):
     # Build a master dataframe
     #master_df = pd.concat([fao_data, woah_data, csv_data.iloc, nationalData.iloc])
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
+
+    #Fill the dropdown with the available sources
+    sources = []
+
+    if fao_data.empty == False:
+        sources += ["fao"]
+
+    if woah_data.empty == False:
+        sources += ["woah"]
+
+    if csv_data.empty == False:
+        sources += ["census"]
+
+    if nationalData.empty == False:
+        sources += ["national"]
+
+    populate_dropDown(sources)
 
     # Build the plotly graph
     fig = px.line(master_df,

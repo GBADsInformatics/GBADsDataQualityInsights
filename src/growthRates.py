@@ -33,8 +33,8 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Cattle"
-country = "USA"
+specie = "Sheep"
+country = "Ethiopia"
 
 if specie == None:
     specie = species[0]
@@ -268,7 +268,6 @@ try:
     stdev_minus3 = np.std(data)*-1 * 3
 
     print("mean = ", mean)
-
 
     fig4.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'blue', dash = 'dash'))
