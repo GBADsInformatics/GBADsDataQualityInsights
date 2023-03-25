@@ -3,10 +3,10 @@
 # Last Updated: Tuesday Dec 20, 2022
 import API_helpers.fao as fao
 import API_helpers.woah as woah
+import API_helpers.helperFunctions
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
-import API_helpers.helperFunctions
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
