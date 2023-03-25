@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 
 from API_helpers.helperFunctions import str2frame
 
@@ -13,5 +14,8 @@ def formatFAOData(fao_data):
     fao_data = fao_data.drop(columns=['iso3', "country"])
     fao_data = fao_data.replace('"','', regex=True)
     fao_data.sort_values(by=['year'], inplace=True)
+
+    years = fao_data['year']
+    fao_data['year'] = pd.to_numeric(years)
 
     return fao_data

@@ -75,6 +75,8 @@ def update_species_checklist(country):
     Input("species_checklist", "options"),
 )
 def populate_dropDown(arr):
+
+    print("Given array: ", arr)
     return arr
 
 
