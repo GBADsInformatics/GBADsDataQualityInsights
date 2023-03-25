@@ -10,7 +10,7 @@ import numpy as np
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-sources = ['BAD']
+sources = ['No Options Available']
 
 #Build a Plotly graph around the data
 app = Dash(__name__)
@@ -40,6 +40,9 @@ app.layout = html.Div(children=[
         value=sources[0],
         id="sources_checklist",
     ),
+
+    html.H3(children='Degree of Polynomial Regression (>1)'),
+    dcc.Input(id='plyDegree', value='2', type='int')
 ])
 
 @app.callback(
@@ -71,13 +74,59 @@ def update_species_checklist(country):
 
 
 @app.callback(
-    Output("species_checklist", "value"),
-    Input("species_checklist", "options"),
+    Output("sources_checklist", "options"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value")
 )
-def populate_dropDown(arr):
+def populate_dropDown(specie, country):
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
-    print("Given array: ", arr)
-    return arr
+    if specie == None:
+        specie = species[0]
+
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
+
+    elif country == None:
+        fao_data = fao.get_data("Ethiopia", specie)
+
+    else:
+        fao_data = fao.get_data(country, specie)
+
+    fao_data = fao.formatFAOData(fao_data)
+
+    # Step two: Get woah data
+    if country == "USA":
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        woah_data = woah.get_data(country, specie)
+
+    woah_data = woah.formatWoahData(woah_data)
+
+    # Step 3: Get Census data
+    csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+
+    # Step 4: Get National data
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+
+    #Fill the dropdown with the available sources
+    sources = []
+    if fao_data.empty == False:
+        sources.append("FAO")
+
+    if woah_data.empty == False:
+        sources.append("WOAH")
+
+    if csv_data.empty == False:
+        sources.append("UN Census Data")
+
+    if nationalData.empty == False:
+        sources.append("National Census Data")
+
+    if sources == []:
+        sources = ["No Options Available**"]
+
+    return sources
 
 
 @app.callback(
@@ -88,7 +137,6 @@ def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-    sources = []
 
     if specie == None:
         specie = species[0]
@@ -119,25 +167,7 @@ def update_line_chart(specie, country):
     nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     # Build a master dataframe
-    #master_df = pd.concat([fao_data, woah_data, csv_data.iloc, nationalData.iloc])
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
-
-    #Fill the dropdown with the available sources
-    sources = []
-
-    if fao_data.empty == False:
-        sources += ["fao"]
-
-    if woah_data.empty == False:
-        sources += ["woah"]
-
-    if csv_data.empty == False:
-        sources += ["census"]
-
-    if nationalData.empty == False:
-        sources += ["national"]
-
-    populate_dropDown(sources)
 
     # Build the plotly graph
     fig = px.line(master_df,
@@ -154,6 +184,45 @@ def update_line_chart(specie, country):
         legend_title="Sources",
     )
     return fig
+
+
+def polynomialRegression(specie, country, source, polyDegree):
+    # Step one: Get FAO data
+    countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+
+    if specie == None:
+        specie = species[0]
+
+    data = None
+    if source == "FAO":
+        if country == "USA":
+            data = fao.get_data("United%20States%20of%20America", specie)
+
+        elif country == None:
+            data = fao.get_data(countries[0], specie)
+
+        else:
+            data = fao.get_data(country, specie)
+
+        data = fao.formatFAOData(data)
+
+    elif source == "WOAH":
+        if country == "USA":
+            data = woah.get_data("United%20States%20of%20America", specie)
+        else:
+            data = woah.get_data(country, specie)
+
+        data = woah.formatWoahData(data)
+
+    elif source == "UN Census Data":
+        data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+
+    else:
+        data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+
+    #
+    data = data.to_numpy()
 
 if __name__ == '__main__':
     app.run_server(debug=True)
