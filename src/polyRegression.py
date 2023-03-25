@@ -7,6 +7,7 @@ import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import numpy as np
+from sklearn.preprocessing import PolynomialFeatures
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
@@ -42,7 +43,7 @@ app.layout = html.Div(children=[
     ),
 
     html.H3(children='Degree of Polynomial Regression (>1)'),
-    dcc.Input(id='plyDegree', value='2', type='int')
+    dcc.Input(id='polyDegree', value='2', type='number')
 ])
 
 @app.callback(
@@ -124,15 +125,15 @@ def populate_dropDown(specie, country):
         sources.append("National Census Data")
 
     if sources == []:
-        sources = ["No Options Available**"]
+        sources = ["No Options Available"]
 
     return sources
 
 
-@app.callback(
-    Output("graph", "figure"),
-    Input("species_checklist", "value"),
-    Input("country_checklist", "value"))
+# @app.callback(
+#     Output("graph", "figure"),
+#     Input("species_checklist", "value"),
+#     Input("country_checklist", "value"))
 def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
@@ -186,6 +187,13 @@ def update_line_chart(specie, country):
     return fig
 
 
+@app.callback(
+    Output("graph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"),
+    Input("sources_checklist", "value"),
+    Input("polyDegree", "value")
+)
 def polynomialRegression(specie, country, source, polyDegree):
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
@@ -194,35 +202,88 @@ def polynomialRegression(specie, country, source, polyDegree):
     if specie == None:
         specie = species[0]
 
-    data = None
-    if source == "FAO":
-        if country == "USA":
-            data = fao.get_data("United%20States%20of%20America", specie)
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
 
-        elif country == None:
-            data = fao.get_data(countries[0], specie)
-
-        else:
-            data = fao.get_data(country, specie)
-
-        data = fao.formatFAOData(data)
-
-    elif source == "WOAH":
-        if country == "USA":
-            data = woah.get_data("United%20States%20of%20America", specie)
-        else:
-            data = woah.get_data(country, specie)
-
-        data = woah.formatWoahData(data)
-
-    elif source == "UN Census Data":
-        data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    elif country == None:
+        fao_data = fao.get_data(countries[0], specie)
 
     else:
-        data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+        fao_data = fao.get_data(country, specie)
 
-    #
-    data = data.to_numpy()
+    fao_data = fao.formatFAOData(fao_data)
+
+    # Step two: Get woah data
+    if country == "USA":
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        woah_data = woah.get_data(country, specie)
+
+    woah_data = woah.formatWoahData(woah_data)
+
+    # Step 3: Get Census data
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+
+    # Step 4: Get National data
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+
+    # Build out the polynomial regression lines
+    polyDegree = int(polyDegree)
+    print("Poly degree: ", polyDegree)
+    print("Source is: ", source)
+    if source != "No Options Available":
+        for i in range(1, polyDegree+1):
+            print("Loop")
+            #Turn the data into a numpy array
+            if source == "FAO":
+                x = fao_data["year"]
+                y = fao_data["population"]
+
+            elif source == "WOAH":
+                x = woah_data["year"]
+                y = woah_data["population"]
+
+            elif source == "UN Census Data":
+                x = csv_data.iloc[csv_index_list]["year"]
+                y = csv_data.iloc[csv_index_list]["population"]
+
+            else:
+                x = nationalData.iloc[nationalData_index_list]["year"]
+                y = nationalData.iloc[nationalData_index_list]["population"]
+
+            #Convert to arrays
+            x = np.array(x)
+            y = np.array(y)
+
+            print("X type is: ", type(x))
+            print("Y type is: ", type(y))
+
+            print("x = ")
+            print(x)
+            print("y = ")
+            print(y)
+
+            data = np.polyfit(x, y, i)
+            print("Data at ", i, " is: ", data)
+
+    # Build a master dataframe
+    master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
+
+    # Build the plotly graph
+    fig = px.line(master_df,
+                x=master_df["year"],
+                y=master_df["population"],
+                color=master_df["source"],
+                markers=True)
+    fig.update_yaxes(type='linear')
+
+    fig.update_layout(
+        title=f"Population of {specie} in {country}",
+        xaxis_title="Year",
+        yaxis_title="Population",
+        legend_title="Sources",
+    )
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
