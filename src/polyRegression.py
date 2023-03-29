@@ -1,5 +1,6 @@
 # Using Polynomial Regression to Predict Animal Populations
 
+from sklearn.linear_model import LinearRegression
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import API_helpers.helperFunctions
@@ -8,6 +9,8 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
+import plotly.graph_objects as go
+
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
@@ -42,8 +45,17 @@ app.layout = html.Div(children=[
         id="sources_checklist",
     ),
 
-    html.H3(children='Degree of Polynomial Regression (>1)'),
-    dcc.Input(id='polyDegree', value='2', type='number')
+    html.Div([
+        html.Div([
+            html.H3(children='Degree of Polynomial Regression (>1)'),
+            dcc.Input(id='polyDegree', value='2', type='number'),
+        ],style={'width': '49%', 'display': 'inline-block'}),
+
+        html.Div([
+            html.H3(children='Year to be predicted to'),
+        dcc.Input(id='maxYear', value='2050', type='number'),
+        ],style={'width': '49%', 'display': 'inline-block'}),
+    ])
 ])
 
 @app.callback(
@@ -130,11 +142,17 @@ def populate_dropDown(specie, country):
     return sources
 
 
-# @app.callback(
-#     Output("graph", "figure"),
-#     Input("species_checklist", "value"),
-#     Input("country_checklist", "value"))
-def update_line_chart(specie, country):
+@app.callback(
+    Output("graph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"),
+    Input("sources_checklist", "value"),
+    Input("polyDegree", "value"),
+    Input("maxYear", "value"),
+)
+def polynomialRegression(specie, country, source, polyDegree, maxYear):
+    maxYear = int(maxYear)
+
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
@@ -178,62 +196,14 @@ def update_line_chart(specie, country):
                 markers=True)
     fig.update_yaxes(type='linear')
 
-    fig.update_layout(
-        title=f"Population of {specie} in {country}",
-        xaxis_title="Year",
-        yaxis_title="Population",
-        legend_title="Sources",
-    )
-    return fig
-
-
-@app.callback(
-    Output("graph", "figure"),
-    Input("species_checklist", "value"),
-    Input("country_checklist", "value"),
-    Input("sources_checklist", "value"),
-    Input("polyDegree", "value")
-)
-def polynomialRegression(specie, country, source, polyDegree):
-    # Step one: Get FAO data
-    countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-
-    if specie == None:
-        specie = species[0]
-
-    if country == "USA":
-        fao_data = fao.get_data("United%20States%20of%20America", specie)
-
-    elif country == None:
-        fao_data = fao.get_data(countries[0], specie)
-
-    else:
-        fao_data = fao.get_data(country, specie)
-
-    fao_data = fao.formatFAOData(fao_data)
-
-    # Step two: Get woah data
-    if country == "USA":
-        woah_data = woah.get_data("United%20States%20of%20America", specie)
-    else:
-        woah_data = woah.get_data(country, specie)
-
-    woah_data = woah.formatWoahData(woah_data)
-
-    # Step 3: Get Census data
-    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
-
-    # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
-
     # Build out the polynomial regression lines
     polyDegree = int(polyDegree)
     print("Poly degree: ", polyDegree)
     print("Source is: ", source)
+    print("Max year = ", maxYear)
+    x = []
     if source != "No Options Available":
         for i in range(1, polyDegree+1):
-            print("Loop")
             #Turn the data into a numpy array
             if source == "FAO":
                 x = fao_data["year"]
@@ -251,31 +221,22 @@ def polynomialRegression(specie, country, source, polyDegree):
                 x = nationalData.iloc[nationalData_index_list]["year"]
                 y = nationalData.iloc[nationalData_index_list]["population"]
 
-            #Convert to arrays
+            #Convert to numpy arrays
             x = np.array(x)
             y = np.array(y)
 
-            print("X type is: ", type(x))
-            print("Y type is: ", type(y))
+            #Fit the model
+            model = PolynomialFeatures(degree=i)
+            x_new = model.fit_transform(x.reshape(-1, 1))
+            new_model = LinearRegression()
+            new_model.fit(x_new, y)
 
-            print("x = ")
-            print(x)
-            print("y = ")
-            print(y)
+            #Set the years in the future that I want to check for
+            x = np.append(x, [i for i in range(2021, maxYear+1)])
+            x_new = model.fit_transform(x.reshape(-1, 1))
+            ypredict = new_model.predict(x_new)
 
-            data = np.polyfit(x, y, i)
-            print("Data at ", i, " is: ", data)
-
-    # Build a master dataframe
-    master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
-
-    # Build the plotly graph
-    fig = px.line(master_df,
-                x=master_df["year"],
-                y=master_df["population"],
-                color=master_df["source"],
-                markers=True)
-    fig.update_yaxes(type='linear')
+            fig.add_traces(go.Scatter(x=x, y=ypredict, mode='lines', name='Polynomial Regression Degree ' + str(i)))
 
     fig.update_layout(
         title=f"Population of {specie} in {country}",
