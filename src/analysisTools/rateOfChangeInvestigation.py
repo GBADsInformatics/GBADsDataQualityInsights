@@ -8,10 +8,13 @@
 # the rate of change between each data source and if
 # one is substantially bigger than the other two it could
 # be concluded that there is a higher chance that it is wrong.
-# The idea was to show this as a networ graph but I don't think we have enough data for the graphs to be useful.
+# The idea was to show this as a network graph but I don't think
+# we have enough data for the graphs to be useful.
 
 #Answer is looking not great as not enough data to make a good conclusion. Each year has tops 2 countries with data for it
 
+import sys
+sys.path.append('../../src')
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import pandas as pd

@@ -5,6 +5,8 @@
 # all data sources. It then groups them into 5 year intervals and finds the average population.
 # The averages are then plotted on a histogram.
 
+import sys
+sys.path.append('../../src')
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import pandas as pd
@@ -13,7 +15,6 @@ import API_helpers.helperFunctions as helperFunctions
 import numpy as np
 import plotly.graph_objects as go
 
-
 def groupBy5Years(data, startYear, endYear, type):
     # Group the data into 5 year intervals
     sum = 0
@@ -21,9 +22,10 @@ def groupBy5Years(data, startYear, endYear, type):
     for year in range(int(startYear), int(endYear)):
         try:
             if type == "String":
-                row = data[data['year'] == str(year)]
+                row = data[data['year'] == year]
             else:
-                row = data[data['year'] == int(year)]
+                row = data[data['year'] == year]
+
             sum += int(row['population'])
             counter += 1
 
@@ -80,8 +82,8 @@ woah_years = woah_data['year'].tolist()
 csv_years = csv_data['year'].tolist()
 national_years = nationalData['year'].tolist()
 
+#Combine the years into a set and sort them
 years = fao_years + woah_years + csv_years + national_years
-
 years = list(dict.fromkeys(years))
 years = [int(s) for s in years]
 years.sort()
@@ -93,12 +95,11 @@ csv_averages = []
 national_averages = []
 yearsArr = []
 
-counter = 0
-
 if len(years) == 0:
     print("No data found")
     exit()
 
+counter = 0
 for i in range(years[0], years[-1]):
     if counter % 5 == 0 and counter != 0:
         fao_averages.append(groupBy5Years(fao_data, i - 5, i, "String"))
@@ -145,11 +146,9 @@ masterDf['census'] = csv_percent_change
 masterDf['national'] = national_percent_change
 masterDf['year'] = yearsArr
 
-print("csv_percent_change")
-print(csv_percent_change)
-
 # Census and national are all zeros
 if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
+
     fig = go.Figure([
         go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah'])
@@ -179,16 +178,14 @@ else:
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
 
-fig.update_xaxes(title="Year")
-fig.update_yaxes(title="Percent Change")
-
 fig.update_layout(
     xaxis = dict(
-    tickmode='array', #change 1
-    tickvals = yearsArr, #change 2
-    ticktext = yearsArr, #change 3
+    tickmode='array',
+    tickvals = yearsArr,
+    ticktext = yearsArr,
     ),
     font=dict(color="black"))
 
-fig.update_xaxes(nticks=len(yearsArr))
+fig.update_yaxes(title="Percent Change")
+fig.update_xaxes(title="Year", nticks=len(yearsArr))
 fig.show()

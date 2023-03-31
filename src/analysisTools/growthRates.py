@@ -8,7 +8,8 @@
 # spot outliers by defining a cut off of 3 standard deviations. Past this point we can label
 # those points as outliers and conclude that there is a high chance that they are inaccuracies.
 
-
+import sys
+sys.path.append('../../src')
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import API_helpers.helperFunctions
@@ -33,8 +34,8 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Sheep"
-country = "Ethiopia"
+specie = "Cattle"
+country = "USA"
 
 if specie == None:
     specie = species[0]

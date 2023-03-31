@@ -1,5 +1,7 @@
 # Using Polynomial Regression to Predict Animal Populations
 
+import sys
+sys.path.append('../../src')
 from sklearn.linear_model import LinearRegression
 import API_helpers.fao as fao
 import API_helpers.woah as woah

@@ -7,6 +7,8 @@
 # (https://www.scribbr.com/statistics/interquartile-range/) for the data.
 # Then add error bars around the data to visualize where approximate outliers are.
 
+import sys
+sys.path.append('../../src')
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import pandas as pd

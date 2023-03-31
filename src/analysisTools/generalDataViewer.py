@@ -1,6 +1,9 @@
 # Census Data Quality Research
 # Written By Ian McKechnie
 # Last Updated: Tuesday Dec 20, 2022
+
+import sys
+sys.path.append('../../src')
 import API_helpers.fao as fao
 import API_helpers.woah as woah
 import API_helpers.helperFunctions
