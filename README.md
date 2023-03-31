@@ -70,6 +70,9 @@ or
 or
 `python3 (or python) IQR.py`
 
+or
+`python3 (or python) 5yearPopulationAvg.py`
+
 ## To Run the Prediciton Model
 Make sure you have pip/pip3 installed
 
