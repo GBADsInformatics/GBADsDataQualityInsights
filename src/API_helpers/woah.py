@@ -3,7 +3,7 @@ from API_helpers.helperFunctions import str2frame
 import pandas as pd
 
 def get_data(country, species):
-    url = f"https://gbadske.org/api:9000/GBADsLivestockPopulation/oie?year=*&country={country}&species={species}&format=file"
+    url = f"https://gbadske.org/api/GBADsLivestockPopulation/oie?year=*&country={country}&species={species}&format=file"
     response = requests.get(url)
     return response.text
 
