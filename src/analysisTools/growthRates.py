@@ -136,7 +136,7 @@ fig.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref
             line = dict(color = 'Orange', dash = 'dash'))
 
 fig.update_layout(
-    title="Distribution of Growth Rates for FAO Data for " + specie + " in " + country,
+    title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
 )
 
 # Get the values outside of the second standard deviation
@@ -307,7 +307,7 @@ for i in range(len(data)):
 app = Dash(__name__)
 
 app.layout = html.Div(children=[
-    html.H1(children='Comparing Growth Rates for FAO, WOAH, Census Data, and National Sources, Showing Outliers'),
+    html.H1(children='Comparing Growth Rates for FAOSTAT, WOAH, Census Data, and National Sources, Showing Outliers'),
 
     dcc.Graph(id='graph', figure=fig),
     dash_table.DataTable(

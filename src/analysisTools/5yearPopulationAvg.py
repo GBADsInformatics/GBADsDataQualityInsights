@@ -140,8 +140,8 @@ for i in range(1, len(fao_averages)):
 
 #Graph them
 masterDf = pd.DataFrame(columns = ["year", "fao", "woah", "census", "national",])
-masterDf['fao'] = fao_percent_change
-masterDf['woah'] = woah_percent_change
+masterDf['FAOSTAT'] = fao_percent_change
+masterDf['WOAH'] = woah_percent_change
 masterDf['census'] = csv_percent_change
 masterDf['national'] = national_percent_change
 masterDf['year'] = yearsArr
@@ -150,14 +150,14 @@ masterDf['year'] = yearsArr
 if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
 
     fig = go.Figure([
-        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah'])
     ])
 
 #National is all zeros
 elif masterDf['national'].isnull().values.any():
     fig = go.Figure([
-        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
@@ -165,14 +165,14 @@ elif masterDf['national'].isnull().values.any():
 #Census is all zeros
 elif masterDf['census'].isnull().values.any():
     fig = go.Figure([
-        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
     ])
 
 else:
     fig = go.Figure([
-        go.Bar(name='FAO', x=masterDf['year'], y=masterDf['fao']),
+        go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),

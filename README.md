@@ -73,7 +73,10 @@ or
 or
 `python3 (or python) 5yearPopulationAvg.py`
 
-## To Run the Prediciton Model
+or
+`python3 (or python) 5yearPopulationAvg.py`
+
+## To Run the Prediction Model
 Make sure you have pip/pip3 installed
 
 Navigate to into the directory, then run
@@ -90,7 +93,7 @@ Finally run
 `python3 (or python) polyRegression.py`
 
 ## Data sources
-- FAO and WOAH/OIE come from the API
+- FAOSTAT and WOAH/OIE come from the API
 - Census data from countries is in the S3 bucket (on AWS)
 - National data needs to be harvested from Stats agencies of countries
 

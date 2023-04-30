@@ -22,7 +22,7 @@ sources = ['No Options Available']
 app = Dash(__name__)
 
 app.layout = html.Div(children=[
-    html.H1(children='Data Quality Comparison for FAO, WOAH, Census Data, and National Sources'),
+    html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources'),
 
     dcc.Graph(id='graph'),
 
