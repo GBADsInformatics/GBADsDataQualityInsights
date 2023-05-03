@@ -8,7 +8,7 @@ def get_data(country, species):
     return response.text
 
 def formatWoahData(woah_data):
-    woah_data = str2frame(woah_data, "oie")
+    woah_data = str2frame(woah_data, "woah")
     woah_data['source'] = "woah"
     woah_data = woah_data.drop(columns=['country'])
     woah_data = woah_data.replace('"','', regex=True)

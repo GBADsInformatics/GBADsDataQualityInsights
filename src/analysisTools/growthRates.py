@@ -25,7 +25,7 @@ from plotly.subplots import make_subplots
 
 def str2frame(estr, source, sep = ',', lineterm = '\n'):
     dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
-    if source == "fao":
+    if source == "faostat":
         df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
     elif source == "woah":
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
@@ -60,8 +60,8 @@ national_data, nationalData_index_list, species = API_helpers.helperFunctions.ge
 
 
 # Get the outliers from the FAO Data
-fao_data = str2frame(fao_data, "fao")
-fao_data['source'] = "fao"
+fao_data = str2frame(fao_data, "faostat")
+fao_data['source'] = "faostat"
 fao_data = fao_data.drop(columns=['iso3', "country"])
 fao_data = fao_data.replace('"','', regex=True)
 fao_data.sort_values(by=['year'], inplace=True)
@@ -108,7 +108,7 @@ FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = FaoGrowthRate['growthRate'].tolist()
 
-fig = ff.create_distplot([data], ["FAO"], bin_size=0.3)
+fig = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3)
 
 #Add the mean and standard deviation to the graph
 mean = np.mean(data)

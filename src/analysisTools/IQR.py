@@ -234,7 +234,7 @@ if national_iqr:
 
 #Fao
 faoCopy = fao_roc['rateOfChange'].copy().to_frame()
-faoNewCol = ['FAO' for i in range(len(faoCopy))]
+faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
 faoCopy['Source'] = faoNewCol
 
 masterDf = faoCopy.copy()

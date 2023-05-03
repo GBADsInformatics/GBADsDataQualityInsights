@@ -139,7 +139,7 @@ for i in range(1, len(fao_averages)):
         national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
 #Graph them
-masterDf = pd.DataFrame(columns = ["year", "fao", "woah", "census", "national",])
+masterDf = pd.DataFrame(columns = ["year", "faostat", "woah", "census", "national",])
 masterDf['FAOSTAT'] = fao_percent_change
 masterDf['WOAH'] = woah_percent_change
 masterDf['census'] = csv_percent_change
