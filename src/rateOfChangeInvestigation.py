@@ -302,18 +302,18 @@ for year in years:
 
 
 # Need to use a network graph to visualize it
-# app = Dash(__name__)
+app = Dash(__name__)
 
-# app.layout = html.Div([
-#     dcc.Graph(id='indicator-graphic'),
+app.layout = html.Div([
+    dcc.Graph(id='indicator-graphic'),
 
-#     dcc.Slider(
-#         year.min(),
-#         year.max(),
-#         step=None,
-#         id='year--slider',
-#         value=year.max(),
-#         marks={str(year): str(year) for year in year},
+    dcc.Slider(
+        year.min(),
+        year.max(),
+        step=None,
+        id='year--slider',
+        value=year.max(),
+        marks={str(year): str(year) for year in year},
 
-#     )
-# ])
+    )
+])

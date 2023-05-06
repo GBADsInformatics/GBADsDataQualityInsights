@@ -27,15 +27,15 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
     dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
     if source == "faostat":
         df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
-    elif source == "woah":
+    elif source == "WOAH":
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
     return df
 
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Cattle"
-country = "USA"
+specie = "Sheep"
+country = "Ethiopia"
 
 if specie == None:
     specie = species[0]
@@ -71,8 +71,8 @@ if country == "USA":
     woah_data = woah.get_data("United%20States%20of%20America", specie)
 else:
     woah_data = woah.get_data(country, specie)
-woah_data = str2frame(woah_data, "woah")
-woah_data['source'] = "woah"
+woah_data = str2frame(woah_data, "WOAH")
+woah_data['source'] = "WOAH"
 woah_data = woah_data.drop(columns=['country'])
 woah_data = woah_data.replace('"','', regex=True)
 woah_data.sort_values(by=['year'], inplace=True)
@@ -109,6 +109,8 @@ FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 data = FaoGrowthRate['growthRate'].tolist()
 
 fig = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3)
+fig.update_xaxes(title_text='Growth Rate')
+fig.update_yaxes(title_text='Density')
 
 #Add the mean and standard deviation to the graph
 mean = np.mean(data)
@@ -127,13 +129,13 @@ fig.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='
 fig.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
             line = dict(color = 'red', dash = 'dash'))
 fig.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
+            line = dict(color = 'Black', dash = 'dash'))
 fig.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
+            line = dict(color = 'Black', dash = 'dash'))
 fig.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
+            line = dict(color = 'orange', dash = 'dash'))
 fig.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
+            line = dict(color = 'orange', dash = 'dash'))
 
 fig.update_layout(
     title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
@@ -156,7 +158,9 @@ woahGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = woahGrowthRate['growthRate'].tolist()
 
-fig2 = ff.create_distplot([data], ["woah"], bin_size=0.3)
+fig2 = ff.create_distplot([data], ["WOAH"], bin_size=0.3)
+fig2.update_xaxes(title_text='Growth Rate')
+fig2.update_yaxes(title_text='Density')
 
 #Add the mean and standard deviation to the graph
 mean = np.mean(data)
@@ -175,13 +179,13 @@ fig2.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref=
 fig2.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
             line = dict(color = 'red', dash = 'dash'))
 fig2.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
+            line = dict(color = 'Black', dash = 'dash'))
 fig2.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Green', dash = 'dash'))
+            line = dict(color = 'Black', dash = 'dash'))
 fig2.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
+            line = dict(color = 'orange', dash = 'dash'))
 fig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-            line = dict(color = 'Orange', dash = 'dash'))
+            line = dict(color = 'orange', dash = 'dash'))
 
 fig2.update_layout(
     title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
@@ -208,6 +212,8 @@ census_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
 try:
     fig3 = ff.create_distplot([data], ["Census"], bin_size=0.3)
+    fig3.update_xaxes(title_text='Growth Rate')
+    fig3.update_yaxes(title_text='Density')
 
     #Add the mean and standard deviation to the graph
     mean = np.mean(data)
@@ -225,13 +231,13 @@ try:
     fig3.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'red', dash = 'dash'))
     fig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Green', dash = 'dash'))
+                line = dict(color = 'black', dash = 'dash'))
     fig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Green', dash = 'dash'))
+                line = dict(color = 'black', dash = 'dash'))
     fig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Orange', dash = 'dash'))
+                line = dict(color = 'orange', dash = 'dash'))
     fig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Orange', dash = 'dash'))
+                line = dict(color = 'orange', dash = 'dash'))
 
     fig3.update_layout(
         title="Distribution of Growth Rates for Census Data for " + specie + " in " + country,
@@ -258,6 +264,8 @@ fig4 = None
 
 try:
     fig4 = ff.create_distplot([data], ["National"], bin_size=0.3)
+    fig4.update_xaxes(title_text='Growth Rate')
+    fig4.update_yaxes(title_text='Density')
 
     #Add the mean and standard deviation to the graph
     mean = np.mean(data)
@@ -277,17 +285,18 @@ try:
     fig4.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'red', dash = 'dash'))
     fig4.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Green', dash = 'dash'))
+                line = dict(color = 'black', dash = 'dash'))
     fig4.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Green', dash = 'dash'))
+                line = dict(color = 'black', dash = 'dash'))
     fig4.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Orange', dash = 'dash'))
+                line = dict(color = 'orange', dash = 'dash'))
     fig4.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-                line = dict(color = 'Orange', dash = 'dash'))
+                line = dict(color = 'orange', dash = 'dash'))
 
     fig4.update_layout(
         title="Distribution of Growth Rates for National Data for " + specie + " in " + country,
     )
+
 
 except Exception as e:
     print(e)
@@ -309,6 +318,8 @@ app = Dash(__name__)
 app.layout = html.Div(children=[
     html.H1(children='Comparing Growth Rates for FAOSTAT, WOAH, Census Data, and National Sources, Showing Outliers'),
 
+
+    html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
     dcc.Graph(id='graph', figure=fig),
     dash_table.DataTable(
         id='table',
@@ -317,6 +328,8 @@ app.layout = html.Div(children=[
         data=fao_outliers.to_dict('records'),
     ),
 
+
+    html.H3(children='WOAH Data for ' + specie + " in " + country),
     dcc.Graph(id='graph2', figure=fig2),
     dash_table.DataTable(
         id='table2',
@@ -325,6 +338,8 @@ app.layout = html.Div(children=[
         data=woah_outliers.to_dict('records'),
     ),
 
+
+    html.H3(children='Census Data for ' + specie + " in " + country),
     dcc.Graph(id='graph3', figure=fig3),
     dash_table.DataTable(
         id='table3',
@@ -333,6 +348,8 @@ app.layout = html.Div(children=[
         data=census_outliers.to_dict('records'),
     ),
 
+
+    html.H3(children='National Data for ' + specie + " in " + country),
     dcc.Graph(id='graph4', figure=fig4),
     dash_table.DataTable(
         id='table4',
