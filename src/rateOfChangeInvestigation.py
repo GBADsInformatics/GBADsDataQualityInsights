@@ -288,14 +288,8 @@ for year in years:
         national_distances.append(None)
 
     mainDf.loc[3] = national_distances
-
-    # print("\n\nYear, ", year)
-    # print("mainDf")
-    # print(mainDf)
-
     mainDict[year] = mainDf
 
-# print(mainDict)
 for year in years:
     print("Year: ", year)
     print(mainDict[year])

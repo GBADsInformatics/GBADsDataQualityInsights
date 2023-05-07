@@ -9,8 +9,8 @@ def get_data(country, species):
     return response.text
 
 def formatFAOData(fao_data):
-    fao_data = str2frame(fao_data, "fao")
-    fao_data['source'] = "faostat"
+    fao_data = str2frame(fao_data, "FAOSTAT")
+    fao_data['source'] = "FAOSTAT"
     fao_data = fao_data.drop(columns=['iso3', "country"])
     fao_data = fao_data.replace('"','', regex=True)
     fao_data.sort_values(by=['year'], inplace=True)

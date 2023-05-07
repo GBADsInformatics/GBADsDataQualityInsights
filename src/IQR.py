@@ -20,7 +20,7 @@ import numpy as np
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Sheep"
-country = "Canada"
+country = "Ethiopia"
 
 # Step one: Get FAO Data and woah Data
 if country == "USA":
@@ -143,8 +143,6 @@ else:
     woah_q3 = np.median(thirdQuartile)
     woah_iqr = woah_q3 - woah_q1
 
-print("WOAH IQR", woah_iqr)
-
 #Get the IQR for CSV
 csv_data = csv_roc.values.tolist()
 csv_dict = {}
@@ -261,4 +259,14 @@ nationalCopy['Source'] = nationalNewCol
 masterDf = pd.concat([masterDf, nationalCopy])
 
 fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
+fig.update_layout(
+    title=f"IQR of Rate of Change of Population for {specie} in {country}",
+    font= dict(
+        size = 18,
+        color = "black"
+    ),
+    xaxis_title="Source",
+    yaxis_title="Rate of Change",
+    legend_title="Source",
+)
 fig.show()

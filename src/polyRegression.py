@@ -126,17 +126,17 @@ def populate_dropDown(specie, country):
 
     #Fill the dropdown with the available sources
     sources = []
-    if fao_data.empty == False:
-        sources.append("FAO")
+    # if fao_data.empty == False:
+    sources.append("FAOSTAT")
 
-    if woah_data.empty == False:
-        sources.append("WOAH")
+    # if woah_data.empty == False:
+    sources.append("WOAH")
 
-    if csv_data.empty == False:
-        sources.append("UN Census Data")
+    # if csv_data.empty == False:
+    sources.append("UN Census Data")
 
-    if nationalData.empty == False:
-        sources.append("National Census Data")
+    # if nationalData.empty == False:
+    sources.append("National Census Data")
 
     if sources == []:
         sources = ["No Options Available"]
@@ -200,14 +200,11 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
 
     # Build out the polynomial regression lines
     polyDegree = int(polyDegree)
-    print("Poly degree: ", polyDegree)
-    print("Source is: ", source)
-    print("Max year = ", maxYear)
     x = []
     if source != "No Options Available":
         for i in range(1, polyDegree+1):
             #Turn the data into a numpy array
-            if source == "FAO":
+            if source == "FAOSTAT":
                 x = fao_data["year"]
                 y = fao_data["population"]
 
@@ -245,6 +242,10 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
         xaxis_title="Year",
         yaxis_title="Population",
         legend_title="Sources",
+        font= dict(
+            size = 18,
+            color = "black"
+        ),
     )
     return fig
 
