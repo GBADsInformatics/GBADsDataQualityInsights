@@ -41,7 +41,7 @@ def groupBy5Years(data, startYear, endYear, type):
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
-country = "USA"
+country = "India"
 
 # Step one: Get FAO Data and WOAH Data
 if country == "USA":
@@ -139,7 +139,7 @@ for i in range(1, len(fao_averages)):
         national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
 #Graph them
-masterDf = pd.DataFrame(columns = ["year", "faostat", "woah", "census", "national",])
+masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
 masterDf['FAOSTAT'] = fao_percent_change
 masterDf['WOAH'] = woah_percent_change
 masterDf['census'] = csv_percent_change
@@ -151,7 +151,7 @@ if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().va
 
     fig = go.Figure([
         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah'])
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH'])
     ])
 
 #National is all zeros
@@ -159,7 +159,7 @@ elif masterDf['national'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
     ])
 
 #Census is all zeros
@@ -167,7 +167,7 @@ elif masterDf['census'].isnull().values.any():
     fig = go.Figure([
         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
-        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
     ])
 
 else:
@@ -175,17 +175,40 @@ else:
         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['woah']),
+        go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
     ])
 
 fig.update_layout(
     xaxis = dict(
-    tickmode='array',
-    tickvals = yearsArr,
-    ticktext = yearsArr,
+        tickmode='array',
+        tickvals = yearsArr,
+        ticktext = yearsArr,
     ),
-    font=dict(color="black"))
+    font=dict(
+        color="black",
+        size=18
+    ),
+    plot_bgcolor='white',
+)
 
-fig.update_yaxes(title="Percent Change")
-fig.update_xaxes(title="Year", nticks=len(yearsArr))
+fig.update_yaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey',
+    title="Percent Change"
+)
+
+fig.update_xaxes(
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey',
+    title="Year",
+    nticks=len(yearsArr)
+)
+
 fig.show()

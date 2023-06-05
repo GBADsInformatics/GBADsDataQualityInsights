@@ -108,7 +108,7 @@ FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = FaoGrowthRate['growthRate'].tolist()
 
-fig = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3)
+fig = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3, show_rug=False)
 fig.update_xaxes(title_text='Growth Rate')
 fig.update_yaxes(title_text='Density')
 
@@ -138,7 +138,29 @@ fig.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref
             line = dict(color = 'orange', dash = 'dash'))
 
 fig.update_layout(
-    title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
+    # title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
+    font = dict(
+        size=18,
+    ),
+    plot_bgcolor='white',
+)
+
+fig.update_yaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
+)
+
+fig.update_xaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
 )
 
 # Get the values outside of the second standard deviation
@@ -158,7 +180,7 @@ woahGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
 data = woahGrowthRate['growthRate'].tolist()
 
-fig2 = ff.create_distplot([data], ["WOAH"], bin_size=0.3)
+fig2 = ff.create_distplot([data], ["WOAH"], bin_size=0.3, show_rug=False)
 fig2.update_xaxes(title_text='Growth Rate')
 fig2.update_yaxes(title_text='Density')
 
@@ -188,7 +210,29 @@ fig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xre
             line = dict(color = 'orange', dash = 'dash'))
 
 fig2.update_layout(
-    title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
+    # title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
+    font = dict(
+        size=18,
+    ),
+    plot_bgcolor='white',
+)
+
+fig2.update_yaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
+)
+
+fig2.update_xaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
 )
 
 # Get the values outside of the second standard deviation
@@ -211,7 +255,7 @@ fig3 = None
 census_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
 try:
-    fig3 = ff.create_distplot([data], ["Census"], bin_size=0.3)
+    fig3 = ff.create_distplot([data], ["Census"], bin_size=0.3, show_rug=False)
     fig3.update_xaxes(title_text='Growth Rate')
     fig3.update_yaxes(title_text='Density')
 
@@ -240,7 +284,29 @@ try:
                 line = dict(color = 'orange', dash = 'dash'))
 
     fig3.update_layout(
-        title="Distribution of Growth Rates for Census Data for " + specie + " in " + country,
+        # title="Distribution of Growth Rates for Census Data for " + specie + " in " + country,
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
+    )
+
+    fig3.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig3.update_xaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
     )
 
     # Get the values outside of the second standard deviation
@@ -263,7 +329,7 @@ data = NationalGrowthRate['growthRate'].tolist()
 fig4 = None
 
 try:
-    fig4 = ff.create_distplot([data], ["National"], bin_size=0.3)
+    fig4 = ff.create_distplot([data], ["National"], bin_size=0.3, show_rug=False)
     fig4.update_xaxes(title_text='Growth Rate')
     fig4.update_yaxes(title_text='Density')
 
@@ -294,7 +360,29 @@ try:
                 line = dict(color = 'orange', dash = 'dash'))
 
     fig4.update_layout(
-        title="Distribution of Growth Rates for National Data for " + specie + " in " + country,
+        # title="Distribution of Growth Rates for National Data for " + specie + " in " + country,
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
+    )
+
+    fig4.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig4.update_xaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
     )
 
 
@@ -319,7 +407,7 @@ app.layout = html.Div(children=[
     html.H1(children='Comparing Growth Rates for FAOSTAT, WOAH, Census Data, and National Sources, Showing Outliers'),
 
 
-    html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
+    # html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
     dcc.Graph(id='graph', figure=fig),
     dash_table.DataTable(
         id='table',
@@ -329,7 +417,7 @@ app.layout = html.Div(children=[
     ),
 
 
-    html.H3(children='WOAH Data for ' + specie + " in " + country),
+    # html.H3(children='WOAH Data for ' + specie + " in " + country),
     dcc.Graph(id='graph2', figure=fig2),
     dash_table.DataTable(
         id='table2',
@@ -339,7 +427,7 @@ app.layout = html.Div(children=[
     ),
 
 
-    html.H3(children='Census Data for ' + specie + " in " + country),
+    # html.H3(children='Census Data for ' + specie + " in " + country),
     dcc.Graph(id='graph3', figure=fig3),
     dash_table.DataTable(
         id='table3',
@@ -349,7 +437,7 @@ app.layout = html.Div(children=[
     ),
 
 
-    html.H3(children='National Data for ' + specie + " in " + country),
+    # html.H3(children='National Data for ' + specie + " in " + country),
     dcc.Graph(id='graph4', figure=fig4),
     dash_table.DataTable(
         id='table4',

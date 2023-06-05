@@ -19,8 +19,8 @@ import numpy as np
 # Step one: Get FAO Data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Sheep"
-country = "Ethiopia"
+specie = "Goats"
+country = "South Africa"
 
 # Step one: Get FAO Data and woah Data
 if country == "USA":
@@ -58,7 +58,6 @@ nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"]
 fao_roc = helperFunctions.getROC(fao_data, "population")
 woah_roc = helperFunctions.getROC(woah_data, "population")
 csv_roc = helperFunctions.getROC(csv_data, "population")
-national_roc = helperFunctions.getROC(nationalData, "population")
 national_roc = helperFunctions.getROC(nationalData, "population")
 
 # Get the year range from the user
@@ -228,9 +227,61 @@ if national_iqr:
     national_lowerFence = national_q1 - (1.5 * national_iqr)
 
 
+
+# Remove the outliers?
+removeOutliers = None
+while True:
+    removeOutliers = input("Do you want to remove the outliers? (y/n) ").strip()
+    if removeOutliers == 'y' or removeOutliers == 'n':
+        break
+
+if removeOutliers == 'y':
+
+    #Remove the outliers from fao
+    for index, elem in fao_roc.iterrows():
+        # print("faoUpperFence ", fao_upperFence)
+        # print("faoLowerFence ", fao_lowerFence)
+        # print("elem['rateOfChange'] ", elem['rateOfChange'])
+        # print("fao_roc.loc[index, 'rateOfChange'] ", fao_roc.loc[index, 'rateOfChange'])
+
+        if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
+            fao_roc.drop(index, inplace=True)
+
+        if index + 1 >= len(fao_roc):
+            break
+
+    #Remove the outliers from woah
+    for index, elem in woah_roc.iterrows():
+        if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
+            woah_roc.drop(index, inplace=True)
+
+        if index + 1 >= len(woah_roc):
+            break
+
+    #Remove the outliers from csv
+    if csv_iqr:
+        for index, elem in csv_roc.iterrows():
+            if elem['rateOfChange'] > csv_upperFence or elem['rateOfChange'] < csv_lowerFence:
+                csv_roc.drop(index, inplace=True)
+
+            if index + 1 >= len(csv_roc):
+                break
+
+    #Remove the outliers from national
+    if national_iqr:
+        for index, elem in national_roc.iterrows():
+            if elem['rateOfChange'] > national_upperFence or elem['rateOfChange'] < national_lowerFence:
+                national_roc.drop(index, inplace=True)
+
+            if index + 1 >= len(national_roc):
+                break
+
+
 # This next section is for the boxplots, you don't need the above data for this
 
 #Fao
+print("FAO")
+print("Type", type(fao_roc))
 faoCopy = fao_roc['rateOfChange'].copy().to_frame()
 faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
 faoCopy['Source'] = faoNewCol
@@ -259,6 +310,7 @@ nationalCopy['Source'] = nationalNewCol
 masterDf = pd.concat([masterDf, nationalCopy])
 
 fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
+
 fig.update_layout(
     title=f"IQR of Rate of Change of Population for {specie} in {country}",
     font= dict(
@@ -268,5 +320,24 @@ fig.update_layout(
     xaxis_title="Source",
     yaxis_title="Rate of Change",
     legend_title="Source",
+    plot_bgcolor='white',
 )
+
+fig.update_yaxes(
+    type='linear',
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
+)
+
+fig.update_xaxes(
+    mirror=True,
+    ticks='outside',
+    showline=True,
+    linecolor='black',
+    gridcolor='lightgrey'
+)
+
 fig.show()

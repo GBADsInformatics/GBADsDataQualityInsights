@@ -10,7 +10,7 @@ import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 
-countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
+countries = ["Greece", "Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
 #Build a Plotly graph around the data
@@ -69,7 +69,7 @@ def update_species_checklist(country):
     Input("country_checklist", "value"))
 def update_line_chart(specie, country):
     # Step one: Get FAO data
-    countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
+    countries = ["Greece", "Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
@@ -105,18 +105,42 @@ def update_line_chart(specie, country):
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
     # Build the plotly graph
-    fig = px.line(master_df,
-                x=master_df["year"],
-                y=master_df["population"],
-                color=master_df["source"],
-                markers=True)
-    fig.update_yaxes(type='linear')
+    fig = px.line(
+            master_df,
+            x=master_df["year"],
+            y=master_df["population"],
+            color=master_df["source"],
+            markers=True)
+
+    fig.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig.update_xaxes(
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+
+    fig.update_traces(line=dict(width=5))
 
     fig.update_layout(
         title=f"Population of {specie} in {country}",
         xaxis_title="Year",
         yaxis_title="Population",
         legend_title="Sources",
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
     )
     return fig
 

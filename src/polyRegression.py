@@ -196,7 +196,6 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
                 y=master_df["population"],
                 color=master_df["source"],
                 markers=True)
-    fig.update_yaxes(type='linear')
 
     # Build out the polynomial regression lines
     polyDegree = int(polyDegree)
@@ -246,7 +245,28 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
             size = 18,
             color = "black"
         ),
+        plot_bgcolor='white',
     )
+
+    fig.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig.update_xaxes(
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig.update_traces(line=dict(width=5))
+
     return fig
 
 if __name__ == '__main__':
