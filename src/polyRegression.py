@@ -229,8 +229,17 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
             new_model = LinearRegression()
             new_model.fit(x_new, y)
 
-            #Set the years in the future that I want to check for
-            x = np.append(x, [i for i in range(2021, maxYear+1)])
+            #Add in any missing years
+            for i in range(1960, x[-1]+1):
+                if i not in x:
+                    x = np.append(x, i)
+
+            x.sort()
+
+            #Add in the predicted value years
+            print("x[-1]: ", x[-1])
+            print(x)
+            x = np.append(x, [i for i in range(x[-1] + 1, maxYear+1)])
             x_new = model.fit_transform(x.reshape(-1, 1))
             ypredict = new_model.predict(x_new)
 
@@ -246,6 +255,11 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
             color = "black"
         ),
         plot_bgcolor='white',
+        xaxis = dict(
+        tickmode='array',
+        tickvals = x,
+        ticktext = x,
+    ),
     )
 
     fig.update_yaxes(
