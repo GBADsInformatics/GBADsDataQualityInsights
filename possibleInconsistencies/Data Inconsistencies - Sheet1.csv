@@ -1,0 +1,92 @@
+Source,Year,Species,Country Code,Source,Who found the error?
+FAOSTAT,2008,Chickens,USA,5 Year Population Avg,Ian McKechnie
+FAOSTAT,1970-1979,Cattle,USA,5 Year Population Avg,Ian McKechnie
+FAOSTAT,1996-1999,Goats,USA,,Ian McKechnie
+WOAH,2014,Goats,USA,,Ian McKechnie
+WOAH,All,Horses,USA,,Ian McKechnie
+US Census,All,Turkeys,USA,,Ian McKechnie
+WOAH,All,Turkeys,USA,,Ian McKechnie
+WOAH,2009,Sheep,ETH,,Ian McKechnie
+FAOSTAT,2019,Chickens,ETH,,Ian McKechnie
+FAOSTAT,1994-1995,Mules,ETH,,Ian McKechnie
+WOAH,"2012, 2015+",Poultry,ETH,,Ian McKechnie
+UN Agriculture Census,All,"Goats, Pigs, Chickens, Horses, Mules, Asses, Ducks, Turkeys, Bees",MEX,IQR,Ian McKechnie
+WOAH,2006,Cattle,ARG,IQR,Ian McKechnie
+WOAH,2005-2007,Goats,ARG,,Ian McKechnie
+FAOSTAT,1998-1999,Pigs,ARG,,Ian McKechnie
+FAOSTAT,1979-1980,Chickens,ARG,,Ian McKechnie
+WOAH,All,Cattle,ZAF,,Ian McKechnie
+WOAH,2011-2015,Sheep,ZAF,,Ian McKechnie
+WOAH,2018,Goats,ZAF,,Ian McKechnie
+FAOSTAT,"1989-1990, 2012-2013",Chickens,ZAF,,Ian McKechnie
+UN Agriculture Census,All,"Cattle, Sheep, Goats",EGY,,Ian McKechnie
+WOAH and FAOSTAT (External data comparison),All,"Cattle, Sheep, Goats, Chickens, Buffaloes",EGY,,Ian McKechnie
+FAOSTAT,2009+,Pigs,EGY,,Ian McKechnie
+WOAH,All,Pigs,EGY,,Ian McKechnie
+WOAH,2014-2018,Buffaloes,EGY,,Ian McKechnie
+UN Agriculture Census,2003,Cattle,IDN,,Ian McKechnie
+WOAH,2007,Cattle,IDN,,Ian McKechnie
+UN Agriculture Census,2013,Sheep,IDN,,Ian McKechnie
+UN Agriculture Census,All,"Goats, Horses, Ducks",IDN,,Ian McKechnie
+WAOH,All,Pigs,IDN,,Ian McKechnie
+FAOSTAT,2016-2017,Chickens,IDN,,Ian McKechnie
+FAOSTAT,"2002, 2017",Ducks,IDN,,Ian McKechnie
+UN Agriculture Census,2010,Cattle,AUS,,Ian McKechnie
+FAOSTAT,1986,Goats,AUS,,Ian McKechnie
+WOAH,All,Goats,AUS,,Ian McKechnie
+FAOSTAT,1972-1973,Pigs,AUS,,Ian McKechnie
+All,All,Buffaloes,AUS,,Ian McKechnie
+FAOSTAT,1988-1989,Ducks,AUS,,Ian McKechnie
+FAOSTAT,"1980, 1987, 2001, 2006-2008",Turkeys,AUS,,Ian McKechnie
+UN Agriculture Census,2001,"Cattle, Sheep",CAN,,Ian McKechnie
+,,,,,Ian McKechnie
+,,,,,Ian McKechnie
+WOAH,2019,Sheep,CAN,,Ian McKechnie
+FAOSTAT,All,Goats,CAN,,Ian McKechnie
+WOAH,All,Chickens,CAN,,Ian McKechnie
+FAOSTAT,1988,Horses,CAN,,Ian McKechnie
+"FAOSTAT, WOAH",2001,Horses,CAN,,Ian McKechnie
+WOAH,All,Turkeys,CAN,,Ian McKechnie
+Ireland,2018,Cattle,IRL,,Ian McKechnie
+FAOSTAT,2000,Sheep,IRL,,Ian McKechnie
+WOAH,"2007, 2015",Sheep,IRL,,Ian McKechnie
+FAOSTAT,1991,Goats,IRL,,Ian McKechnie
+WOAH,2015,Goats,IRL,,Ian McKechnie
+All,All,Poultry,IRL,,Ian McKechnie
+WOAH,2010,"Cattle, Sheep, Goats,",IND,,Ian McKechnie
+WOAH,All,Mules,IND,,Ian McKechnie
+FAOSTAT,All,Poultry,IND,,Ian McKechnie
+UN Agriculture Census,2001,Sheep,BRA,,Ian McKechnie
+UN Agriculture Census,All,Goats,BRA,,Ian McKechnie
+FAOSTAT,1996,Goats,BRA,,Ian McKechnie
+WOAH,2013,Goats,BRA,,Ian McKechnie
+UN Agriculture Census,2006,Horses,BRA,,Ian McKechnie
+,,,,,Ian McKechnie
+FAOSTAT,1996,Horses,BRA,,Ian McKechnie
+UN Agriculture Census,2001,Mules,BRA,,Ian McKechnie
+UN Agriculture Census,2006,Asses,BRA,,Ian McKechnie
+All,All,Poultry,BRA,,Ian McKechnie
+UN Agriculture Census,2004,Cattle,BWA,,Ian McKechnie
+WOAH,2012-2018,Cattle,BWA,,Ian McKechnie
+FOASTAT/WOAH,2006+,Sheep,BWA,,Ian McKechnie
+FAOSTAT/WOAH/UN Agriculture Census,2004+,Goats,BWA,,Ian McKechnie
+FAOSTAT,2010,"Pigs, Chickens",BWA,,Ian McKechnie
+FAOSTAT,2001-1006,Asses,BWA,,Ian McKechnie
+WOAH,All,Cattle,CHN,,Ian McKechnie
+WOAH,All,Sheep,CHN,,Ian McKechnie
+WOAH,All,Goats,CHN,,Ian McKechnie
+UN Agriculture Census,1997,"Goats, Pigs, Chickens, Horses, Mules, Asses,",CHN,,Ian McKechnie
+All,All,Poultry,CHN,,Ian McKechnie
+WOAH,2012,Cattle,JPN,,Ian McKechnie
+UN Agriculture Census,All,Pigs,JPN,,Ian McKechnie
+UN Agriculture Census,All,Chickens,JPN,,Ian McKechnie
+All,All,"Chickens, Hens, Broilers (Population numbers do not add up)",JPN,,Ian McKechnie
+UN Agriculture Census,All,"Cattle, Goats, Pigs, Chickens, Horses, Mules, Asses, Ducks, Turkeys,",MEX,IQR,Ian McKechnie
+WOAH,"2005, 2006","Cattle, Goats",CHL,,Ian McKechnie
+WOAH,2007-2018,Sheep,CHL,,Ian McKechnie
+FAOSTAT,2014,Chickens,CHL,,Ian McKechnie
+FAOSTAT,1990,Horses,CHL,,Ian McKechnie
+FAOSTAT,1980-1998,Mules,CHL,,Ian McKechnie
+FAOSTAT,"1996, 2007",Asses,CHL,,Ian McKechnie
+FAOSTAT,1961-1994,Turkeys,CHL,,Ian McKechnie
+FAOSTAT,2001-2002,Chickens,AFG,,Kassy Raymond 
