@@ -41,7 +41,7 @@ def groupBy5Years(data, startYear, endYear, type):
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Cattle"
-country = "Botswana"
+country = "USA"
 
 # Step one: Get FAO Data and WOAH Data
 if country == "USA":

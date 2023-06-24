@@ -34,8 +34,8 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
 # Get all the data
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
-specie = "Sheep"
-country = "Ethiopia"
+specie = "Cattle"
+country = "Mexico"
 
 if specie == None:
     specie = species[0]

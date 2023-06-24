@@ -20,7 +20,7 @@ import numpy as np
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 specie = "Goats"
-country = "South Africa"
+country = "Mexico"
 
 # Step one: Get FAO Data and woah Data
 if country == "USA":
@@ -95,6 +95,8 @@ for i in range(startYear, endYear):
     except:
         continue
 
+fao_iqr_list.sort()
+
 firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
 secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
 
@@ -103,14 +105,14 @@ secondQuartile = firstHalf[len(firstHalf)//2:]
 thirdQuartile = secondHalf[:len(secondHalf)//2]
 fourthQuartile = secondHalf[len(secondHalf)//2:]
 
+
+fao_q1 = np.median(firstQuartile)
+fao_q3 = np.median(thirdQuartile)
+
 if firstQuartile == [] or thirdQuartile == []:
     fao_iqr = None
 else:
-    fao_q1 = np.median(firstQuartile)
-    fao_q3 = np.median(thirdQuartile)
     fao_iqr = fao_q3 - fao_q1
-
-print("FAO IQR", fao_iqr)
 
 #Get the IQR for woah
 woah_data = woah_roc.values.tolist()
@@ -126,6 +128,8 @@ for i in range(startYear, endYear):
         woah_iqr_list.append(woah_dict[i])
     except:
         continue
+
+woah_iqr_list.sort()
 
 firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
 secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
@@ -166,7 +170,7 @@ thirdQuartile = secondHalf[:len(secondHalf)//2]
 fourthQuartile = secondHalf[len(secondHalf)//2:]
 
 csv_iqr = None
-sv_q1 = None
+csv_q1 = None
 csv_q3 = None
 if firstQuartile == [] or thirdQuartile == []:
     csv_iqr = None
@@ -174,8 +178,6 @@ else:
     csv_q1 = np.median(firstQuartile)
     csv_q3 = np.median(thirdQuartile)
     csv_iqr = csv_q3 - csv_q1
-
-print("csv_iq r", csv_iqr)
 
 
 #Get the IQR for National
@@ -208,8 +210,6 @@ else:
     national_q3 = np.median(thirdQuartile)
     national_iqr = national_q3 - national_q1
 
-print("national_iqr ", national_iqr)
-
 
 #Get the upper and lower fence
 fao_upperFence = fao_q3 + (1.5 * fao_iqr)
@@ -226,6 +226,11 @@ if national_iqr:
     national_upperFence = national_q3 + (1.5 * national_iqr)
     national_lowerFence = national_q1 - (1.5 * national_iqr)
 
+newDf = pd.DataFrame(columns=['year', 'rateOfChange'])
+for i in range(woah_roc.shape[0]):
+    newDf.loc[i] = woah_roc.iloc[i]
+
+woah_roc = newDf
 
 
 # Remove the outliers?
@@ -239,11 +244,6 @@ if removeOutliers == 'y':
 
     #Remove the outliers from fao
     for index, elem in fao_roc.iterrows():
-        # print("faoUpperFence ", fao_upperFence)
-        # print("faoLowerFence ", fao_lowerFence)
-        # print("elem['rateOfChange'] ", elem['rateOfChange'])
-        # print("fao_roc.loc[index, 'rateOfChange'] ", fao_roc.loc[index, 'rateOfChange'])
-
         if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
             fao_roc.drop(index, inplace=True)
 
@@ -251,9 +251,11 @@ if removeOutliers == 'y':
             break
 
     #Remove the outliers from woah
+    woah_roc = woah_roc.reset_index()
+
     for index, elem in woah_roc.iterrows():
         if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
-            woah_roc.drop(index, inplace=True)
+            woah_roc.drop(index=index, inplace=True)
 
         if index + 1 >= len(woah_roc):
             break
@@ -280,8 +282,6 @@ if removeOutliers == 'y':
 # This next section is for the boxplots, you don't need the above data for this
 
 #Fao
-print("FAO")
-print("Type", type(fao_roc))
 faoCopy = fao_roc['rateOfChange'].copy().to_frame()
 faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
 faoCopy['Source'] = faoNewCol
