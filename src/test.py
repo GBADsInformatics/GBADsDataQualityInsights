@@ -65,6 +65,8 @@ app.layout = html.Div(children=[
 def render_content(tab):
     print("here")
     if tab == 'polyRegress':
+        species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
+
         print("In da if statement")
         return html.Div([
             html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources'),
@@ -107,195 +109,180 @@ def render_content(tab):
 
     elif tab == 'fiveYearAvg':
         # Step one: Get FAO Data and WOAH Data
-        # if country == "USA":
-        #     fao_data = fao.get_data("United%20States%20of%20America", specie)
-        #     woah_data = woah.get_data("United%20States%20of%20America", specie)
-        # else:
-        #     fao_data = fao.get_data(country, specie)
-        #     woah_data = woah.get_data(country, specie)
+        # specie    = "Cattle"
+        species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 
-        # fao_data = fao.formatFAOData(fao_data)
-        # woah_data = woah.formatWoahData(woah_data)
+        if country == "USA":
+            fao_data = fao.get_data("United%20States%20of%20America", specie)
+            woah_data = woah.get_data("United%20States%20of%20America", specie)
+        else:
+            fao_data = fao.get_data(country, specie)
+            woah_data = woah.get_data(country, specie)
 
-        # # Step 3: Get Census Data
-        # csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
+        fao_data = fao.formatFAOData(fao_data)
+        woah_data = woah.formatWoahData(woah_data)
 
-        # #Only get the rows that have the correct specie
-        # new_csv_data = []
-        # for index, row in csv_data.iterrows():
-        #     if row['species'] == specie:
-        #         new_csv_data.append( [row['year'], row['population']] )
+        # Step 3: Get Census Data
+        csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
 
-        # csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
+        # Only get the rows that have the correct specie
+        new_csv_data = []
+        for index, row in csv_data.iterrows():
+            if row['species'] == specie:
+                new_csv_data.append( [row['year'], row['population']] )
 
-        # # Step 4: Get National Data
-        # nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+        csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
 
-        # new_national_data = []
-        # for index, row in nationalData.iterrows():
-        #     if row['species'] == specie:
-        #         new_national_data.append( [row['year'], row['population']] )
+        # Step 4: Get National Data
+        nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
 
-        # nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
+        new_national_data = []
+        for index, row in nationalData.iterrows():
+            if row['species'] == specie:
+                new_national_data.append( [row['year'], row['population']] )
+
+        nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
 
-        # #Get a list of all the years from each data source
-        # fao_years = fao_data['year'].tolist()
-        # woah_years = woah_data['year'].tolist()
-        # csv_years = csv_data['year'].tolist()
-        # national_years = nationalData['year'].tolist()
+        #Get a list of all the years from each data source
+        fao_years = fao_data['year'].tolist()
+        woah_years = woah_data['year'].tolist()
+        csv_years = csv_data['year'].tolist()
+        national_years = nationalData['year'].tolist()
 
-        # #Combine the years into a set and sort them
-        # years = fao_years + woah_years + csv_years + national_years
-        # years = list(dict.fromkeys(years))
-        # years = [int(s) for s in years]
-        # years.sort()
+        #Combine the years into a set and sort them
+        years = fao_years + woah_years + csv_years + national_years
+        years = list(dict.fromkeys(years))
+        years = [int(s) for s in years]
+        years.sort()
 
-        # #Get each ones five year averages
-        # fao_averages = []
-        # woah_averages = []
-        # csv_averages = []
-        # national_averages = []
-        # yearsArr = []
+        #Get each ones five year averages
+        fao_averages = []
+        woah_averages = []
+        csv_averages = []
+        national_averages = []
+        yearsArr = []
 
-        # if len(years) == 0:
-        #     print("No data found")
-        #     exit()
+        if len(years) == 0:
+            print("No data found")
+            exit()
 
-        # counter = 0
-        # for i in range(years[0], years[-1]):
-        #     if counter % 5 == 0 and counter != 0:
-        #         fao_averages.append(groupBy5Years(fao_data, i - 5, i, "String"))
-        #         woah_averages.append(groupBy5Years(woah_data, i - 5, i, "String"))
-        #         csv_averages.append(groupBy5Years(csv_data, i - 5, i, "Int"))
-        #         national_averages.append(groupBy5Years(nationalData, i - 5, i, "Int"))
-        #         yearsArr.append(i)
+        counter = 0
+        for i in range(years[0], years[-1]):
+            if counter % 5 == 0 and counter != 0:
+                fao_averages.append(groupBy5Years(fao_data, i - 5, i, "String"))
+                woah_averages.append(groupBy5Years(woah_data, i - 5, i, "String"))
+                csv_averages.append(groupBy5Years(csv_data, i - 5, i, "Int"))
+                national_averages.append(groupBy5Years(nationalData, i - 5, i, "Int"))
+                yearsArr.append(i)
 
-        #     counter += 1
+            counter += 1
 
-        # #Find the percent changes
-        # fao_percent_change = []
-        # woah_percent_change = []
-        # csv_percent_change = []
-        # national_percent_change = []
-        # yearsArr.pop(0)
+        #Find the percent changes
+        fao_percent_change = []
+        woah_percent_change = []
+        csv_percent_change = []
+        national_percent_change = []
+        yearsArr.pop(0)
 
-        # for i in range(1, len(fao_averages)):
-        #     if fao_averages[i-1] == 0 or fao_averages[i] == 0:
-        #         fao_percent_change.append(0)
-        #     else:
-        #         fao_percent_change.append( ((fao_averages[i] - fao_averages[i-1]) / fao_averages[i-1]) * 100 )
+        for i in range(1, len(fao_averages)):
+            if fao_averages[i-1] == 0 or fao_averages[i] == 0:
+                fao_percent_change.append(0)
+            else:
+                fao_percent_change.append( ((fao_averages[i] - fao_averages[i-1]) / fao_averages[i-1]) * 100 )
 
-        #     if woah_averages[i-1] == 0 or woah_averages[i] == 0:
-        #         woah_percent_change.append(0)
-        #     else:
-        #         woah_percent_change.append( ((woah_averages[i] - woah_averages[i-1]) / woah_averages[i-1]) * 100 )
+            if woah_averages[i-1] == 0 or woah_averages[i] == 0:
+                woah_percent_change.append(0)
+            else:
+                woah_percent_change.append( ((woah_averages[i] - woah_averages[i-1]) / woah_averages[i-1]) * 100 )
 
-        #     if csv_averages[i-1] == 0 or csv_averages[i] == 0:
-        #         csv_percent_change.append(0)
-        #     else:
-        #         csv_percent_change.append( ((csv_averages[i] - csv_averages[i-1]) / csv_averages[i-1]) * 100 )
+            if csv_averages[i-1] == 0 or csv_averages[i] == 0:
+                csv_percent_change.append(0)
+            else:
+                csv_percent_change.append( ((csv_averages[i] - csv_averages[i-1]) / csv_averages[i-1]) * 100 )
 
-        #     if national_averages[i-1] == 0 or national_averages[i] == 0:
-        #         national_percent_change.append(0)
-        #     else:
-        #         national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
+            if national_averages[i-1] == 0 or national_averages[i] == 0:
+                national_percent_change.append(0)
+            else:
+                national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
-        # #Graph them
-        # masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
-        # masterDf['FAOSTAT'] = fao_percent_change
-        # masterDf['WOAH'] = woah_percent_change
-        # masterDf['census'] = csv_percent_change
-        # masterDf['national'] = national_percent_change
-        # masterDf['year'] = yearsArr
+        #Graph them
+        masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
+        masterDf['FAOSTAT'] = fao_percent_change
+        masterDf['WOAH'] = woah_percent_change
+        masterDf['census'] = csv_percent_change
+        masterDf['national'] = national_percent_change
+        masterDf['year'] = yearsArr
 
-        # # Census and national are all zeros
-        # if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
+        # Census and national are all zeros
+        if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
 
-        #     fig = go.Figure([
-        #         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-        #         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH'])
-        #     ])
+            fig = go.Figure([
+                go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
+                go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH'])
+            ])
 
-        # #National is all zeros
-        # elif masterDf['national'].isnull().values.any():
-        #     fig = go.Figure([
-        #         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-        #         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        #         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
-        #     ])
+        #National is all zeros
+        elif masterDf['national'].isnull().values.any():
+            fig = go.Figure([
+                go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
+                go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
+                go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
+            ])
 
-        # #Census is all zeros
-        # elif masterDf['census'].isnull().values.any():
-        #     fig = go.Figure([
-        #         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-        #         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
-        #         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
-        #     ])
+        #Census is all zeros
+        elif masterDf['census'].isnull().values.any():
+            fig = go.Figure([
+                go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
+                go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+                go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
+            ])
 
-        # else:
-        #     fig = go.Figure([
-        #         go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-        #         go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
-        #         go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-        #         go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
-        #     ])
+        else:
+            fig = go.Figure([
+                go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
+                go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
+                go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
+                go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
+            ])
 
-        # fig.update_layout(
-        #     xaxis = dict(
-        #         tickmode='array',
-        #         tickvals = yearsArr,
-        #         ticktext = yearsArr,
-        #     ),
-        #     font=dict(
-        #         color="black",
-        #         size=18
-        #     ),
-        #     plot_bgcolor='white',
-        # )
+        fig.update_layout(
+            xaxis = dict(
+                tickmode='array',
+                tickvals = yearsArr,
+                ticktext = yearsArr,
+            ),
+            font=dict(
+                color="black",
+                size=18
+            ),
+            plot_bgcolor='white',
+        )
 
-        # fig.update_yaxes(
-        #     type='linear',
-        #     mirror=True,
-        #     ticks='outside',
-        #     showline=True,
-        #     linecolor='black',
-        #     gridcolor='lightgrey',
-        #     title="Percent Change"
-        # )
+        fig.update_yaxes(
+            type='linear',
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey',
+            title="Percent Change"
+        )
 
-        # fig.update_xaxes(
-        #     mirror=True,
-        #     ticks='outside',
-        #     showline=True,
-        #     linecolor='black',
-        #     gridcolor='lightgrey',
-        #     title="Year",
-        #     nticks=len(yearsArr)
-        # )
-
-        # return html.Div([
-        #     html.H1(children='Five Year Average Percent Change in Population of ' + specie + ' in ' + country),
-
-        #     dcc.Graph(id='graph', figure=fig),
-
-        #     html.H3(children='Countries'),
-        #     dcc.Dropdown(
-        #         countries,
-        #         value=countries[0],
-        #         id="country_checklist",
-        #     ),
-
-        #     html.H3(children='Species'),
-        #     dcc.Dropdown(
-        #         species,
-        #         value=species[0],
-        #         id="species_checklist",
-        #     ),
-        # ])
+        fig.update_xaxes(
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey',
+            title="Year",
+            nticks=len(yearsArr)
+        )
 
         return html.Div([
-            html.H1(children='In else statement'),
+            html.H1(children='Five Year Average Percent Change in Population of ' + specie + ' in ' + country),
+
+            dcc.Graph(id='graph', figure=fig),
         ])
 
     else:
@@ -341,7 +328,10 @@ def populate_dropDown(specie, country):
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
-        specie = species[0]
+        if species == None or species == []:
+            specie = "Cattle"
+        else:
+            specie = species[0]
 
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -363,10 +353,10 @@ def populate_dropDown(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    # csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    # nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     #Fill the dropdown with the available sources
     sources = []
