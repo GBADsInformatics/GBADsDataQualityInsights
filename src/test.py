@@ -54,6 +54,7 @@ app.layout = html.Div(children=[
     dcc.Tabs(id="tabs", value='polyRegress', children=[
         dcc.Tab(label='Polynomial Regression', value='polyRegress'),
         dcc.Tab(label='Five-Year Population Avg.', value='fiveYearAvg'),
+        dcc.Tab(label='General Data View', value='genDataViewer'),
     ]),
     html.Br(),
     html.Div(id='contents'),
@@ -63,9 +64,9 @@ app.layout = html.Div(children=[
         Output('contents', 'children'),
         Input('tabs', 'value'))
 def render_content(tab):
-    print("here")
+    species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
+
     if tab == 'polyRegress':
-        species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 
         print("In da if statement")
         return html.Div([
@@ -285,6 +286,26 @@ def render_content(tab):
             dcc.Graph(id='graph', figure=fig),
         ])
 
+    elif tab == 'genDataViewer':
+        return html.Div([
+            html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources'),
+
+            dcc.Graph(id='genDataViewerGraph'),
+
+            html.H3(children='Countries'),
+            dcc.Dropdown(
+                countries,
+                value=countries[0],
+                id="country_checklist",
+            ),
+
+            html.H3(children='Species'),
+            dcc.Dropdown(
+                species,
+                value=species[0],
+                id="species_checklist",
+            ),
+        ])
     else:
         print("In da else statement")
         return html.Div([
@@ -515,6 +536,88 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
 
     fig.update_traces(line=dict(width=5))
 
+    return fig
+
+
+@app.callback(
+    Output("genDataViewerGraph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def update_line_chart(specie, country):
+    # Step one: Get FAO data
+    countries = ["Greece", "Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+
+    if specie == None:
+        specie = species[0]
+
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
+
+    elif country == None:
+        fao_data = fao.get_data(countries[0], specie)
+
+    else:
+        fao_data = fao.get_data(country, specie)
+
+    fao_data = fao.formatFAOData(fao_data)
+
+    # Step two: Get woah data
+    if country == "USA":
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        woah_data = woah.get_data(country, specie)
+
+    woah_data = woah.formatWoahData(woah_data)
+
+    # Step 3: Get Census data
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+
+    # Step 4: Get National data
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+
+    # Build a master dataframe
+    #master_df = pd.concat([fao_data, woah_data, csv_data.iloc, nationalData.iloc])
+    master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
+
+    # Build the plotly graph
+    fig = px.line(
+            master_df,
+            x=master_df["year"],
+            y=master_df["population"],
+            color=master_df["source"],
+            markers=True)
+
+    fig.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig.update_xaxes(
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+
+    fig.update_traces(line=dict(width=5))
+
+    fig.update_layout(
+        title=f"Population of {specie} in {country}",
+        xaxis_title="Year",
+        yaxis_title="Population",
+        legend_title="Sources",
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
+    )
     return fig
 
 if __name__ == '__main__':
