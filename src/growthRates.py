@@ -406,7 +406,6 @@ app = Dash(__name__)
 app.layout = html.Div(children=[
     html.H1(children='Comparing Growth Rates for FAOSTAT, WOAH, Census Data, and National Sources, Showing Outliers'),
 
-
     # html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
     dcc.Graph(id='graph', figure=fig),
     dash_table.DataTable(
