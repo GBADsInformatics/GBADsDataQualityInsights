@@ -308,6 +308,5 @@ app.layout = html.Div([
         id='year--slider',
         value=year.max(),
         marks={str(year): str(year) for year in year},
-
     )
 ])

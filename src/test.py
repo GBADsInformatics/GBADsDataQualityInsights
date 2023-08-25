@@ -51,12 +51,12 @@ app.config["suppress_callback_exceptions"] = True
 app.title = "GBADs Informatics User Vizualizer"
 
 app.layout = html.Div(children=[
-
     dcc.Tabs(id="tabs", value='polyRegress', children=[
         dcc.Tab(label='Polynomial Regression', value='polyRegress'),
         dcc.Tab(label='Five-Year Population Avg.', value='fiveYearAvg'),
         dcc.Tab(label='General Data View', value='genDataViewer'),
         dcc.Tab(label='Growth Rates', value='growthRates'),
+        dcc.Tab(label='IQR', value='iqr')
     ]),
     html.Br(),
     html.Div(id='contents'),
@@ -66,7 +66,9 @@ app.layout = html.Div(children=[
         Output('contents', 'children'),
         Input('tabs', 'value'))
 def render_content(tab):
-    species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
+    species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
+    country = "USA"
+    
 
     if tab == 'polyRegress':
 
@@ -724,78 +726,6 @@ def render_content(tab):
                     ),
                 ])
 
-        # try:
-        #     growthRatesFig4 = ff.create_distplot([data], ["National"], bin_size=0.3, show_rug=False)
-        #     growthRatesFig4.update_xaxes(title_text='Growth Rate')
-        #     growthRatesFig4.update_yaxes(title_text='Density')
-
-        #     #Add the mean and standard deviation to the graph
-        #     mean = np.mean(data)
-        #     stdev_pluss = np.std(data)
-        #     stdev_minus = np.std(data)*-1
-        #     stdev_pluss2 = np.std(data) * 2
-        #     stdev_minus2 = np.std(data)*-1 * 2
-        #     stdev_pluss3 = np.std(data) * 3
-        #     stdev_minus3 = np.std(data)*-1 * 3
-
-        #     print("mean = ", mean)
-
-        #     growthRatesFig4.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'blue', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'red', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'red', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'black', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'black', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'orange', dash = 'dash'))
-        #     growthRatesFig4.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-        #                 line = dict(color = 'orange', dash = 'dash'))
-
-        #     growthRatesFig4.update_layout(
-        #         # title="Distribution of Growth Rates for National Data for " + specie + " in " + country,
-        #         font = dict(
-        #             size=18,
-        #         ),
-        #         plot_bgcolor='white',
-        #     )
-
-        #     growthRatesFig4.update_yaxes(
-        #         type='linear',
-        #         mirror=True,
-        #         ticks='outside',
-        #         showline=True,
-        #         linecolor='black',
-        #         gridcolor='lightgrey'
-        #     )
-
-        #     growthRatesFig4.update_xaxes(
-        #         type='linear',
-        #         mirror=True,
-        #         ticks='outside',
-        #         showline=True,
-        #         linecolor='black',
-        #         gridcolor='lightgrey'
-        #     )
-
-
-        # except Exception as e:
-        #     print("In exception")
-        #     print(e)
-
-        # # Get the values outside of the second standard deviation
-        # national_outliers = pd.DataFrame(columns=['year', "growthRate"])
-
-        # for i in range(len(data)):
-        #     if NationalGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or NationalGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-        #         data = [NationalGrowthRate.iloc[i]['year'], NationalGrowthRate.iloc[i]['growthRate']]
-        #         row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
-        #         national_outliers = pd.concat([national_outliers, row], axis=0)
-
-
         return html.Div([
             html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
             dcc.Graph(id='graph', figure=growthRatesFig1),
@@ -820,6 +750,335 @@ def render_content(tab):
             createGrowthRateFig4(NationalGrowthRate),
 
         ])
+
+    elif tab == 'iqr':
+        specie = "Cattle"
+        country = "USA"
+
+        if country == "USA":
+            fao_data = fao.get_data("United%20States%20of%20America", specie)
+            woah_data = woah.get_data("United%20States%20of%20America", specie)
+        else:
+            fao_data = fao.get_data(country, specie)
+            woah_data = woah.get_data(country, specie)
+
+        fao_data = fao.formatFAOData(fao_data)
+        woah_data = woah.formatWoahData(woah_data)
+
+        # Step 3: Get Census Data
+        csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
+
+        #Only get the rows that have the correct specie
+        new_csv_data = []
+        for index, row in csv_data.iterrows():
+            if row['species'] == specie:
+                new_csv_data.append( [row['year'], row['population']] )
+
+        csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
+
+        # Step 4: Get National Data
+        nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+
+        new_national_data = []
+        for index, row in nationalData.iterrows():
+            if row['species'] == specie:
+                new_national_data.append( [row['year'], row['population']] )
+
+        nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
+
+        # Get the rate of change of each point in each data set and put it into arrays
+        fao_roc = helperFunctions.getROC(fao_data, "population")
+        woah_roc = helperFunctions.getROC(woah_data, "population")
+        csv_roc = helperFunctions.getROC(csv_data, "population")
+        national_roc = helperFunctions.getROC(nationalData, "population")
+
+        # Get the year range from the user
+        startYear = 1960
+        endYear = 2019
+
+        # while True:
+        #     startYear = 1960
+        #     if startYear.isdigit():
+        #         startYear = int(startYear)
+        #         break
+        #     else:
+        #         print("Please enter a valid year")
+
+        # while True:
+        #     # endYear = input("What is your end year? ").strip()
+        #     endYear = 2020
+        #     if endYear.isdigit():
+        #         endYear = int(endYear)
+        #         break
+        #     else:
+        #         print("Please enter a valid year")
+
+        #Get the IQR for FAO
+        fao_data = fao_roc.values.tolist()
+        fao_dict = {}
+
+        for elem in fao_data:
+            fao_dict[int(elem[0])] = elem[1]
+
+        fao_iqr_list = []
+        for i in range(startYear, endYear):
+            #Add all the years that exist in the range
+            try:
+                fao_iqr_list.append(fao_dict[i])
+            except:
+                continue
+
+        fao_iqr_list.sort()
+
+        firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
+        secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
+
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        secondQuartile = firstHalf[len(firstHalf)//2:]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+        fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+
+        fao_q1 = np.median(firstQuartile)
+        fao_q3 = np.median(thirdQuartile)
+
+        if firstQuartile == [] or thirdQuartile == []:
+            fao_iqr = None
+        else:
+            fao_iqr = fao_q3 - fao_q1
+
+        #Get the IQR for woah
+        woah_data = woah_roc.values.tolist()
+        woah_dict = {}
+
+        for elem in woah_data:
+            woah_dict[int(elem[0])] = elem[1]
+
+        woah_iqr_list = []
+        for i in range(startYear, endYear):
+            #Add all the years that exist in the range
+            try:
+                woah_iqr_list.append(woah_dict[i])
+            except:
+                continue
+
+        woah_iqr_list.sort()
+
+        firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
+        secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
+
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        secondQuartile = firstHalf[len(firstHalf)//2:]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+        fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+        if firstQuartile == [] or thirdQuartile == []:
+            woah_iqr = None
+        else:
+            woah_q1 = np.median(firstQuartile)
+            woah_q3 = np.median(thirdQuartile)
+            woah_iqr = woah_q3 - woah_q1
+
+        #Get the IQR for CSV
+        csv_data = csv_roc.values.tolist()
+        csv_dict = {}
+
+        for elem in csv_data:
+            csv_dict[int(elem[0])] = elem[1]
+
+        csv_iqr_list = []
+        for i in range(startYear, endYear):
+            #Add all the years that exist in the range
+            try:
+                csv_iqr_list.append(csv_dict[i])
+            except:
+                continue
+
+        firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
+        secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
+
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        secondQuartile = firstHalf[len(firstHalf)//2:]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+        fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+        csv_iqr = None
+        csv_q1 = None
+        csv_q3 = None
+        if firstQuartile == [] or thirdQuartile == []:
+            csv_iqr = None
+        else:
+            csv_q1 = np.median(firstQuartile)
+            csv_q3 = np.median(thirdQuartile)
+            csv_iqr = csv_q3 - csv_q1
+
+
+        #Get the IQR for National
+        national_data = national_roc.values.tolist()
+        national_dict = {}
+
+        for elem in national_data:
+            national_dict[int(elem[0])] = elem[1]
+
+        national_iqr_list = []
+        for i in range(startYear, endYear):
+            #Add all the years that exist in the range
+            try:
+                national_iqr_list.append(national_dict[i])
+            except:
+                continue
+
+        firstHalf = national_iqr_list[:len(national_iqr_list)//2]
+        secondHalf = national_iqr_list[len(national_iqr_list)//2:]
+
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        secondQuartile = firstHalf[len(firstHalf)//2:]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+        fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+        if firstQuartile == [] or thirdQuartile == []:
+            national_iqr = None
+        else:
+            national_q1 = np.median(firstQuartile)
+            national_q3 = np.median(thirdQuartile)
+            national_iqr = national_q3 - national_q1
+
+
+        #Get the upper and lower fence
+        fao_upperFence = fao_q3 + (1.5 * fao_iqr)
+        fao_lowerFence = fao_q1 - (1.5 * fao_iqr)
+
+        woah_upperFence = woah_q3 + (1.5 * woah_iqr)
+        woah_lowerFence = woah_q1 - (1.5 * woah_iqr)
+
+        if csv_iqr:
+            csv_upperFence = csv_q3 + (1.5 * csv_iqr)
+            csv_lowerFence = csv_q1 - (1.5 * csv_iqr)
+
+        if national_iqr:
+            national_upperFence = national_q3 + (1.5 * national_iqr)
+            national_lowerFence = national_q1 - (1.5 * national_iqr)
+
+        newDf = pd.DataFrame(columns=['year', 'rateOfChange'])
+        for i in range(woah_roc.shape[0]):
+            newDf.loc[i] = woah_roc.iloc[i]
+
+        woah_roc = newDf
+
+
+        # Remove the outliers?
+        removeOutliers = 'y'
+        # while True:
+        #     removeOutliers = input("Do you want to remove the outliers? (y/n) ").strip()
+        #     if removeOutliers == 'y' or removeOutliers == 'n':
+        #         break
+
+        if removeOutliers == 'y':
+
+            #Remove the outliers from fao
+            for index, elem in fao_roc.iterrows():
+                if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
+                    fao_roc.drop(index, inplace=True)
+
+                if index + 1 >= len(fao_roc):
+                    break
+
+            #Remove the outliers from woah
+            woah_roc = woah_roc.reset_index()
+
+            for index, elem in woah_roc.iterrows():
+                if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
+                    woah_roc.drop(index=index, inplace=True)
+
+                if index + 1 >= len(woah_roc):
+                    break
+
+            #Remove the outliers from csv
+            if csv_iqr:
+                for index, elem in csv_roc.iterrows():
+                    if elem['rateOfChange'] > csv_upperFence or elem['rateOfChange'] < csv_lowerFence:
+                        csv_roc.drop(index, inplace=True)
+
+                    if index + 1 >= len(csv_roc):
+                        break
+
+            #Remove the outliers from national
+            if national_iqr:
+                for index, elem in national_roc.iterrows():
+                    if elem['rateOfChange'] > national_upperFence or elem['rateOfChange'] < national_lowerFence:
+                        national_roc.drop(index, inplace=True)
+
+                    if index + 1 >= len(national_roc):
+                        break
+
+
+        # This next section is for the boxplots, you don't need the above data for this
+
+        #Fao
+        faoCopy = fao_roc['rateOfChange'].copy().to_frame()
+        faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
+        faoCopy['Source'] = faoNewCol
+
+        masterDf = faoCopy.copy()
+
+        #woah
+        woahCopy = woah_roc['rateOfChange'].copy().to_frame()
+        woahNewCol = ['WOAH' for i in range(len(woahCopy))]
+        woahCopy['Source'] = woahNewCol
+
+        masterDf = pd.concat([masterDf, woahCopy])
+
+        #csv
+        csvCopy = csv_roc['rateOfChange'].copy().to_frame()
+        csvNewCol = ['UN Census Data' for i in range(len(csvCopy))]
+        csvCopy['Source'] = csvNewCol
+
+        masterDf = pd.concat([masterDf, csvCopy])
+
+        #National
+        nationalCopy = national_roc['rateOfChange'].copy().to_frame()
+        nationalNewCol = ['National Census Bureau' for i in range(len(nationalCopy))]
+        nationalCopy['Source'] = nationalNewCol
+
+        masterDf = pd.concat([masterDf, nationalCopy])
+
+        fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
+
+        fig.update_layout(
+            title=f"IQR of Rate of Change of Population for {specie} in {country}",
+            font= dict(
+                size = 18,
+                color = "black"
+            ),
+            xaxis_title="Source",
+            yaxis_title="Rate of Change",
+            legend_title="Source",
+            plot_bgcolor='white',
+        )
+
+        fig.update_yaxes(
+            type='linear',
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey'
+        )
+
+        fig.update_xaxes(
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey'
+        )
+
+        return html.Div([
+            html.H1(children='IQR of Rate of Change of Population for ' + specie + " in " + country),
+            dcc.Graph(id='iqrGraph', figure=fig)
+        ])
+
+
     else:
         print("In da else statement")
         return html.Div([
