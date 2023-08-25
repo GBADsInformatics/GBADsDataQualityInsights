@@ -56,7 +56,7 @@ app.layout = html.Div(children=[
         dcc.Tab(label='Five-Year Population Avg.', value='fiveYearAvg'),
         dcc.Tab(label='General Data View', value='genDataViewer'),
         dcc.Tab(label='Growth Rates', value='growthRates'),
-        dcc.Tab(label='IQR', value='iqr')
+        dcc.Tab(label='IQR', value='iqr'),
     ]),
     html.Br(),
     html.Div(id='contents'),
@@ -68,7 +68,6 @@ app.layout = html.Div(children=[
 def render_content(tab):
     species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
     country = "USA"
-    
 
     if tab == 'polyRegress':
 
@@ -114,7 +113,7 @@ def render_content(tab):
 
     elif tab == 'fiveYearAvg':
         # Step one: Get FAO Data and WOAH Data
-        # specie    = "Cattle"
+        specie = "Cattle"
         species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 
         if country == "USA":
@@ -1077,7 +1076,6 @@ def render_content(tab):
             html.H1(children='IQR of Rate of Change of Population for ' + specie + " in " + country),
             dcc.Graph(id='iqrGraph', figure=fig)
         ])
-
 
     else:
         print("In da else statement")
