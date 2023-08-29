@@ -130,10 +130,7 @@ def render_content(tab):
         ])
 
     elif tab == 'growthRates':
-
-        # countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
         species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
-        # sources   = ['No Options Available']
         specie    = "Cattle"
         country   = "USA"
 
@@ -565,334 +562,331 @@ def render_content(tab):
         ])
 
     elif tab == 'iqr':
-        specie = "Cattle"
-        country = "USA"
-
-        if country == "USA":
-            fao_data = fao.get_data("United%20States%20of%20America", specie)
-            woah_data = woah.get_data("United%20States%20of%20America", specie)
-        else:
-            fao_data = fao.get_data(country, specie)
-            woah_data = woah.get_data(country, specie)
-
-        fao_data = fao.formatFAOData(fao_data)
-        woah_data = woah.formatWoahData(woah_data)
-
-        # Step 3: Get Census Data
-        csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
-
-        #Only get the rows that have the correct specie
-        new_csv_data = []
-        for index, row in csv_data.iterrows():
-            if row['species'] == specie:
-                new_csv_data.append( [row['year'], row['population']] )
-
-        csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
-
-        # Step 4: Get National Data
-        nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
-
-        new_national_data = []
-        for index, row in nationalData.iterrows():
-            if row['species'] == specie:
-                new_national_data.append( [row['year'], row['population']] )
-
-        nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
-
-        # Get the rate of change of each point in each data set and put it into arrays
-        fao_roc = helperFunctions.getROC(fao_data, "population")
-        woah_roc = helperFunctions.getROC(woah_data, "population")
-        csv_roc = helperFunctions.getROC(csv_data, "population")
-        national_roc = helperFunctions.getROC(nationalData, "population")
-
-        # Get the year range from the user
-        startYear = 1960
-        endYear = 2019
-
-        # while True:
-        #     startYear = 1960
-        #     if startYear.isdigit():
-        #         startYear = int(startYear)
-        #         break
-        #     else:
-        #         print("Please enter a valid year")
-
-        # while True:
-        #     # endYear = input("What is your end year? ").strip()
-        #     endYear = 2020
-        #     if endYear.isdigit():
-        #         endYear = int(endYear)
-        #         break
-        #     else:
-        #         print("Please enter a valid year")
-
-        #Get the IQR for FAO
-        fao_data = fao_roc.values.tolist()
-        fao_dict = {}
-
-        for elem in fao_data:
-            fao_dict[int(elem[0])] = elem[1]
-
-        fao_iqr_list = []
-        for i in range(startYear, endYear):
-            #Add all the years that exist in the range
-            try:
-                fao_iqr_list.append(fao_dict[i])
-            except:
-                continue
-
-        fao_iqr_list.sort()
-
-        firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
-        secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
-
-        firstQuartile = firstHalf[:len(firstHalf)//2]
-        secondQuartile = firstHalf[len(firstHalf)//2:]
-        thirdQuartile = secondHalf[:len(secondHalf)//2]
-        fourthQuartile = secondHalf[len(secondHalf)//2:]
-
-
-        fao_q1 = np.median(firstQuartile)
-        fao_q3 = np.median(thirdQuartile)
-
-        if firstQuartile == [] or thirdQuartile == []:
-            fao_iqr = None
-        else:
-            fao_iqr = fao_q3 - fao_q1
-
-        #Get the IQR for woah
-        woah_data = woah_roc.values.tolist()
-        woah_dict = {}
-
-        for elem in woah_data:
-            woah_dict[int(elem[0])] = elem[1]
-
-        woah_iqr_list = []
-        for i in range(startYear, endYear):
-            #Add all the years that exist in the range
-            try:
-                woah_iqr_list.append(woah_dict[i])
-            except:
-                continue
-
-        woah_iqr_list.sort()
-
-        firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
-        secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
-
-        firstQuartile = firstHalf[:len(firstHalf)//2]
-        secondQuartile = firstHalf[len(firstHalf)//2:]
-        thirdQuartile = secondHalf[:len(secondHalf)//2]
-        fourthQuartile = secondHalf[len(secondHalf)//2:]
-
-        if firstQuartile == [] or thirdQuartile == []:
-            woah_iqr = None
-        else:
-            woah_q1 = np.median(firstQuartile)
-            woah_q3 = np.median(thirdQuartile)
-            woah_iqr = woah_q3 - woah_q1
-
-        #Get the IQR for CSV
-        csv_data = csv_roc.values.tolist()
-        csv_dict = {}
-
-        for elem in csv_data:
-            csv_dict[int(elem[0])] = elem[1]
-
-        csv_iqr_list = []
-        for i in range(startYear, endYear):
-            #Add all the years that exist in the range
-            try:
-                csv_iqr_list.append(csv_dict[i])
-            except:
-                continue
-
-        firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
-        secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
-
-        firstQuartile = firstHalf[:len(firstHalf)//2]
-        secondQuartile = firstHalf[len(firstHalf)//2:]
-        thirdQuartile = secondHalf[:len(secondHalf)//2]
-        fourthQuartile = secondHalf[len(secondHalf)//2:]
-
-        csv_iqr = None
-        csv_q1 = None
-        csv_q3 = None
-        if firstQuartile == [] or thirdQuartile == []:
-            csv_iqr = None
-        else:
-            csv_q1 = np.median(firstQuartile)
-            csv_q3 = np.median(thirdQuartile)
-            csv_iqr = csv_q3 - csv_q1
-
-
-        #Get the IQR for National
-        national_data = national_roc.values.tolist()
-        national_dict = {}
-
-        for elem in national_data:
-            national_dict[int(elem[0])] = elem[1]
-
-        national_iqr_list = []
-        for i in range(startYear, endYear):
-            #Add all the years that exist in the range
-            try:
-                national_iqr_list.append(national_dict[i])
-            except:
-                continue
-
-        firstHalf = national_iqr_list[:len(national_iqr_list)//2]
-        secondHalf = national_iqr_list[len(national_iqr_list)//2:]
-
-        firstQuartile = firstHalf[:len(firstHalf)//2]
-        secondQuartile = firstHalf[len(firstHalf)//2:]
-        thirdQuartile = secondHalf[:len(secondHalf)//2]
-        fourthQuartile = secondHalf[len(secondHalf)//2:]
-
-        if firstQuartile == [] or thirdQuartile == []:
-            national_iqr = None
-        else:
-            national_q1 = np.median(firstQuartile)
-            national_q3 = np.median(thirdQuartile)
-            national_iqr = national_q3 - national_q1
-
-
-        #Get the upper and lower fence
-        fao_upperFence = fao_q3 + (1.5 * fao_iqr)
-        fao_lowerFence = fao_q1 - (1.5 * fao_iqr)
-
-        woah_upperFence = woah_q3 + (1.5 * woah_iqr)
-        woah_lowerFence = woah_q1 - (1.5 * woah_iqr)
-
-        if csv_iqr:
-            csv_upperFence = csv_q3 + (1.5 * csv_iqr)
-            csv_lowerFence = csv_q1 - (1.5 * csv_iqr)
-
-        if national_iqr:
-            national_upperFence = national_q3 + (1.5 * national_iqr)
-            national_lowerFence = national_q1 - (1.5 * national_iqr)
-
-        newDf = pd.DataFrame(columns=['year', 'rateOfChange'])
-        for i in range(woah_roc.shape[0]):
-            newDf.loc[i] = woah_roc.iloc[i]
-
-        woah_roc = newDf
-
-
-        # Remove the outliers?
-        removeOutliers = 'y'
-        # while True:
-        #     removeOutliers = input("Do you want to remove the outliers? (y/n) ").strip()
-        #     if removeOutliers == 'y' or removeOutliers == 'n':
-        #         break
-
-        if removeOutliers == 'y':
-
-            #Remove the outliers from fao
-            for index, elem in fao_roc.iterrows():
-                if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
-                    fao_roc.drop(index, inplace=True)
-
-                if index + 1 >= len(fao_roc):
-                    break
-
-            #Remove the outliers from woah
-            woah_roc = woah_roc.reset_index()
-
-            for index, elem in woah_roc.iterrows():
-                if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
-                    woah_roc.drop(index=index, inplace=True)
-
-                if index + 1 >= len(woah_roc):
-                    break
-
-            #Remove the outliers from csv
-            if csv_iqr:
-                for index, elem in csv_roc.iterrows():
-                    if elem['rateOfChange'] > csv_upperFence or elem['rateOfChange'] < csv_lowerFence:
-                        csv_roc.drop(index, inplace=True)
-
-                    if index + 1 >= len(csv_roc):
-                        break
-
-            #Remove the outliers from national
-            if national_iqr:
-                for index, elem in national_roc.iterrows():
-                    if elem['rateOfChange'] > national_upperFence or elem['rateOfChange'] < national_lowerFence:
-                        national_roc.drop(index, inplace=True)
-
-                    if index + 1 >= len(national_roc):
-                        break
-
-
-        # This next section is for the boxplots, you don't need the above data for this
-
-        #Fao
-        faoCopy = fao_roc['rateOfChange'].copy().to_frame()
-        faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
-        faoCopy['Source'] = faoNewCol
-
-        masterDf = faoCopy.copy()
-
-        #woah
-        woahCopy = woah_roc['rateOfChange'].copy().to_frame()
-        woahNewCol = ['WOAH' for i in range(len(woahCopy))]
-        woahCopy['Source'] = woahNewCol
-
-        masterDf = pd.concat([masterDf, woahCopy])
-
-        #csv
-        csvCopy = csv_roc['rateOfChange'].copy().to_frame()
-        csvNewCol = ['UN Census Data' for i in range(len(csvCopy))]
-        csvCopy['Source'] = csvNewCol
-
-        masterDf = pd.concat([masterDf, csvCopy])
-
-        #National
-        nationalCopy = national_roc['rateOfChange'].copy().to_frame()
-        nationalNewCol = ['National Census Bureau' for i in range(len(nationalCopy))]
-        nationalCopy['Source'] = nationalNewCol
-
-        masterDf = pd.concat([masterDf, nationalCopy])
-
-        fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
-
-        fig.update_layout(
-            title=f"IQR of Rate of Change of Population for {specie} in {country}",
-            font= dict(
-                size = 18,
-                color = "black"
-            ),
-            xaxis_title="Source",
-            yaxis_title="Rate of Change",
-            legend_title="Source",
-            plot_bgcolor='white',
-        )
-
-        fig.update_yaxes(
-            type='linear',
-            mirror=True,
-            ticks='outside',
-            showline=True,
-            linecolor='black',
-            gridcolor='lightgrey'
-        )
-
-        fig.update_xaxes(
-            mirror=True,
-            ticks='outside',
-            showline=True,
-            linecolor='black',
-            gridcolor='lightgrey'
-        )
-
         return html.Div([
-            html.H1(children='IQR of Rate of Change of Population for ' + specie + " in " + country),
-            dcc.Graph(id='iqrGraph', figure=fig)
+            html.H1(id='iqrHeader', children=""),
+            dcc.Graph(id='iqrGraph')
         ])
 
     else:
         return html.Div()
+
+
+@app.callback(
+    Output("iqrGraph", "children"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def createIqrHeader(specie, country):
+    return f'IQR of Rate of Change of Population for ' + specie + " in " + country
+
+@app.callback(
+    Output("iqrGraph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def createIqrGraph(specie, country):
+    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        fao_data = fao.get_data(country, specie)
+        woah_data = woah.get_data(country, specie)
+
+    fao_data = fao.formatFAOData(fao_data)
+    woah_data = woah.formatWoahData(woah_data)
+
+    # Step 3: Get Census Data
+    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
+
+    #Only get the rows that have the correct specie
+    new_csv_data = []
+    for index, row in csv_data.iterrows():
+        if row['species'] == specie:
+            new_csv_data.append( [row['year'], row['population']] )
+
+    csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
+
+    # Step 4: Get National Data
+    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+
+    new_national_data = []
+    for index, row in nationalData.iterrows():
+        if row['species'] == specie:
+            new_national_data.append( [row['year'], row['population']] )
+
+    nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
+
+    # Get the rate of change of each point in each data set and put it into arrays
+    fao_roc = helperFunctions.getROC(fao_data, "population")
+    woah_roc = helperFunctions.getROC(woah_data, "population")
+    csv_roc = helperFunctions.getROC(csv_data, "population")
+    national_roc = helperFunctions.getROC(nationalData, "population")
+
+    # Get the year range from the user
+    startYear = 1960
+    endYear = 2019
+
+    #Get the IQR for FAO
+    fao_data = fao_roc.values.tolist()
+    fao_dict = {}
+
+    for elem in fao_data:
+        fao_dict[int(elem[0])] = elem[1]
+
+    fao_iqr_list = []
+    for i in range(startYear, endYear):
+        #Add all the years that exist in the range
+        try:
+            fao_iqr_list.append(fao_dict[i])
+        except:
+            continue
+
+    fao_iqr_list.sort()
+
+    firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
+    secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
+
+    firstQuartile = firstHalf[:len(firstHalf)//2]
+    secondQuartile = firstHalf[len(firstHalf)//2:]
+    thirdQuartile = secondHalf[:len(secondHalf)//2]
+    fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+
+    fao_q1 = np.median(firstQuartile)
+    fao_q3 = np.median(thirdQuartile)
+
+    if firstQuartile == [] or thirdQuartile == []:
+        fao_iqr = None
+    else:
+        fao_iqr = fao_q3 - fao_q1
+
+    #Get the IQR for woah
+    woah_data = woah_roc.values.tolist()
+    woah_dict = {}
+
+    for elem in woah_data:
+        woah_dict[int(elem[0])] = elem[1]
+
+    woah_iqr_list = []
+    for i in range(startYear, endYear):
+        #Add all the years that exist in the range
+        try:
+            woah_iqr_list.append(woah_dict[i])
+        except:
+            continue
+
+    woah_iqr_list.sort()
+
+    firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
+    secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
+
+    firstQuartile = firstHalf[:len(firstHalf)//2]
+    secondQuartile = firstHalf[len(firstHalf)//2:]
+    thirdQuartile = secondHalf[:len(secondHalf)//2]
+    fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+    if firstQuartile == [] or thirdQuartile == []:
+        woah_iqr = None
+    else:
+        woah_q1 = np.median(firstQuartile)
+        woah_q3 = np.median(thirdQuartile)
+        woah_iqr = woah_q3 - woah_q1
+
+    #Get the IQR for CSV
+    csv_data = csv_roc.values.tolist()
+    csv_dict = {}
+
+    for elem in csv_data:
+        csv_dict[int(elem[0])] = elem[1]
+
+    csv_iqr_list = []
+    for i in range(startYear, endYear):
+        #Add all the years that exist in the range
+        try:
+            csv_iqr_list.append(csv_dict[i])
+        except:
+            continue
+
+    firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
+    secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
+
+    firstQuartile = firstHalf[:len(firstHalf)//2]
+    secondQuartile = firstHalf[len(firstHalf)//2:]
+    thirdQuartile = secondHalf[:len(secondHalf)//2]
+    fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+    csv_iqr = None
+    csv_q1 = None
+    csv_q3 = None
+    if firstQuartile == [] or thirdQuartile == []:
+        csv_iqr = None
+    else:
+        csv_q1 = np.median(firstQuartile)
+        csv_q3 = np.median(thirdQuartile)
+        csv_iqr = csv_q3 - csv_q1
+
+
+    #Get the IQR for National
+    national_data = national_roc.values.tolist()
+    national_dict = {}
+
+    for elem in national_data:
+        national_dict[int(elem[0])] = elem[1]
+
+    national_iqr_list = []
+    for i in range(startYear, endYear):
+        #Add all the years that exist in the range
+        try:
+            national_iqr_list.append(national_dict[i])
+        except:
+            continue
+
+    firstHalf = national_iqr_list[:len(national_iqr_list)//2]
+    secondHalf = national_iqr_list[len(national_iqr_list)//2:]
+
+    firstQuartile = firstHalf[:len(firstHalf)//2]
+    secondQuartile = firstHalf[len(firstHalf)//2:]
+    thirdQuartile = secondHalf[:len(secondHalf)//2]
+    fourthQuartile = secondHalf[len(secondHalf)//2:]
+
+    if firstQuartile == [] or thirdQuartile == []:
+        national_iqr = None
+    else:
+        national_q1 = np.median(firstQuartile)
+        national_q3 = np.median(thirdQuartile)
+        national_iqr = national_q3 - national_q1
+
+
+    #Get the upper and lower fence
+    fao_upperFence = fao_q3 + (1.5 * fao_iqr)
+    fao_lowerFence = fao_q1 - (1.5 * fao_iqr)
+
+    woah_upperFence = woah_q3 + (1.5 * woah_iqr)
+    woah_lowerFence = woah_q1 - (1.5 * woah_iqr)
+
+    if csv_iqr:
+        csv_upperFence = csv_q3 + (1.5 * csv_iqr)
+        csv_lowerFence = csv_q1 - (1.5 * csv_iqr)
+
+    if national_iqr:
+        national_upperFence = national_q3 + (1.5 * national_iqr)
+        national_lowerFence = national_q1 - (1.5 * national_iqr)
+
+    newDf = pd.DataFrame(columns=['year', 'rateOfChange'])
+    for i in range(woah_roc.shape[0]):
+        newDf.loc[i] = woah_roc.iloc[i]
+
+    woah_roc = newDf
+
+
+    # Remove the outliers?
+    removeOutliers = 'y'
+    # while True:
+    #     removeOutliers = input("Do you want to remove the outliers? (y/n) ").strip()
+    #     if removeOutliers == 'y' or removeOutliers == 'n':
+    #         break
+
+    if removeOutliers == 'y':
+
+        #Remove the outliers from fao
+        for index, elem in fao_roc.iterrows():
+            if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
+                fao_roc.drop(index, inplace=True)
+
+            if index + 1 >= len(fao_roc):
+                break
+
+        #Remove the outliers from woah
+        woah_roc = woah_roc.reset_index()
+
+        for index, elem in woah_roc.iterrows():
+            if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
+                woah_roc.drop(index=index, inplace=True)
+
+            if index + 1 >= len(woah_roc):
+                break
+
+        #Remove the outliers from csv
+        if csv_iqr:
+            for index, elem in csv_roc.iterrows():
+                if elem['rateOfChange'] > csv_upperFence or elem['rateOfChange'] < csv_lowerFence:
+                    csv_roc.drop(index, inplace=True)
+
+                if index + 1 >= len(csv_roc):
+                    break
+
+        #Remove the outliers from national
+        if national_iqr:
+            for index, elem in national_roc.iterrows():
+                if elem['rateOfChange'] > national_upperFence or elem['rateOfChange'] < national_lowerFence:
+                    national_roc.drop(index, inplace=True)
+
+                if index + 1 >= len(national_roc):
+                    break
+
+
+    # This next section is for the boxplots, you don't need the above data for this
+
+    #Fao
+    faoCopy = fao_roc['rateOfChange'].copy().to_frame()
+    faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
+    faoCopy['Source'] = faoNewCol
+
+    masterDf = faoCopy.copy()
+
+    #woah
+    woahCopy = woah_roc['rateOfChange'].copy().to_frame()
+    woahNewCol = ['WOAH' for i in range(len(woahCopy))]
+    woahCopy['Source'] = woahNewCol
+
+    masterDf = pd.concat([masterDf, woahCopy])
+
+    #csv
+    csvCopy = csv_roc['rateOfChange'].copy().to_frame()
+    csvNewCol = ['UN Census Data' for i in range(len(csvCopy))]
+    csvCopy['Source'] = csvNewCol
+
+    masterDf = pd.concat([masterDf, csvCopy])
+
+    #National
+    nationalCopy = national_roc['rateOfChange'].copy().to_frame()
+    nationalNewCol = ['National Census Bureau' for i in range(len(nationalCopy))]
+    nationalCopy['Source'] = nationalNewCol
+
+    masterDf = pd.concat([masterDf, nationalCopy])
+
+    fig = px.box( masterDf, y="rateOfChange", x="Source", points="all")
+
+    fig.update_layout(
+        title=f"IQR of Rate of Change of Population for {specie} in {country}",
+        font= dict(
+            size = 18,
+            color = "black"
+        ),
+        xaxis_title="Source",
+        yaxis_title="Rate of Change",
+        legend_title="Source",
+        plot_bgcolor='white',
+    )
+
+    fig.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    fig.update_xaxes(
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    return fig
 
 
 @app.callback(
