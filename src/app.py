@@ -28,10 +28,10 @@ app.config["suppress_callback_exceptions"] = True
 app.title = "GBADs Informatics User Vizualizer"
 
 app.layout = html.Div(children=[
-    dcc.Tabs(id="tabs", value='polyRegress', children=[
+    dcc.Tabs(id="tabs", value='genDataViewer', children=[
+        dcc.Tab(label='General Data View', value='genDataViewer'),
         dcc.Tab(label='Polynomial Regression', value='polyRegress'),
         dcc.Tab(label='Five-Year Population Avg.', value='fiveYearAvg'),
-        dcc.Tab(label='General Data View', value='genDataViewer'),
         dcc.Tab(label='Growth Rates', value='growthRates'),
         dcc.Tab(label='IQR', value='iqr'),
     ]),
@@ -46,7 +46,7 @@ app.layout = html.Div(children=[
 
     html.H3(children='Species'),
     dcc.Dropdown(
-        species,
+        options=species,
         value=species[0],
         id="species_checklist",
     ),
@@ -87,8 +87,9 @@ def render_content(tab):
 
     if tab == 'polyRegress':
 
+
         return html.Div([
-            html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources'),
+            html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources using Polynomial Regression'),
 
             dcc.Graph(id='polyRegressGraph'),
 
@@ -113,13 +114,10 @@ def render_content(tab):
         ])
 
     elif tab == 'fiveYearAvg':
-        # Step one: Get FAO Data and WOAH Data
-        # specie = "Cattle"
-
-
         return html.Div([
             html.H1(id='fiveYearAvgHeader', children=""),
             dcc.Graph(id='fiveYearAvgGraph'),
+            html.H3(children='Some graphs may appear empty due to lack of data'),
         ])
 
     elif tab == 'genDataViewer':
@@ -158,9 +156,7 @@ def render_content(tab):
             woah_data = woah.get_data(country, specie)
 
         woah_data = woah.formatWoahData(woah_data)
-
         census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
-
         national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
 
@@ -289,7 +285,6 @@ def render_content(tab):
         woahGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
         def createGrowthRateFig2(woahGrowthRate):
-
             data = woahGrowthRate['growthRate'].tolist()
 
             growthRatesFig2 = ff.create_distplot([data], ["WOAH"], bin_size=0.3, show_rug=False)
@@ -564,11 +559,384 @@ def render_content(tab):
     elif tab == 'iqr':
         return html.Div([
             html.H1(id='iqrHeader', children=""),
-            dcc.Graph(id='iqrGraph')
+            dcc.Graph(id='iqrGraph'),
+
+            html.H3(children='Year Range'),
+            html.Div([
+                dcc.Dropdown(
+                    id='startYearDropDown',
+                    options=[{'label': i, 'value': i} for i in range(1960, 2019)],
+                    value=1961
+                ),
+                dcc.Dropdown(
+                    id='endYearDropDown',
+                    options=[{'label': i, 'value': i} for i in range(1961, 2020)],
+                    value=2018
+                ),
+            ], style={'width': '49%', 'display': 'inline-block'}),
         ])
 
     else:
         return html.Div()
+
+
+@app.callback(
+    Output("growthRatesGraph1", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph1(specie, country):
+    if specie == None:
+        specie = species[0]
+
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
+
+    elif country == None:
+        fao_data = fao.get_data(countries[0], specie)
+
+    else:
+        fao_data = fao.get_data(country, specie)
+
+    # Get the outliers from the FAO Data
+    fao_data = str2frame(fao_data, "faostat")
+    fao_data['source'] = "faostat"
+    fao_data = fao_data.drop(columns=['iso3', "country"])
+    fao_data = fao_data.replace('"','', regex=True)
+    fao_data.sort_values(by=['year'], inplace=True)
+
+    FaoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
+    FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
+
+    data = FaoGrowthRate['growthRate'].tolist()
+
+    growthRatesFig1 = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3, show_rug=False)
+    growthRatesFig1.update_xaxes(title_text='Growth Rate')
+    growthRatesFig1.update_yaxes(title_text='Density')
+
+    #Add the mean and standard deviation to the graph
+    mean = np.mean(data)
+    stdev_pluss = np.std(data)
+    stdev_minus = np.std(data)*-1
+    stdev_pluss2 = np.std(data) * 2
+    stdev_minus2 = np.std(data)*-1 * 2
+    stdev_pluss3 = np.std(data) * 3
+    stdev_minus3 = np.std(data)*-1 * 3
+
+
+    growthRatesFig1.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'blue', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Black', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Black', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'orange', dash = 'dash'))
+    growthRatesFig1.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'orange', dash = 'dash'))
+
+    growthRatesFig1.update_layout(
+        # title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
+    )
+
+    growthRatesFig1.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    growthRatesFig1.update_xaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+    return growthRatesFig1
+
+@app.callback(
+    Output("growthRatesGraph2", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph2(specie, country):
+    if specie == None:
+        specie = species[0]
+
+    if country == "USA":
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+
+    elif country == None:
+        woah_data = woah.get_data(countries[0], specie)
+
+    else:
+        woah_data = woah.get_data(country, specie)
+
+    woah_data = woah.formatWoahData(woah_data)
+    if country == "USA":
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        woah_data = woah.get_data(country, specie)
+    woah_data = str2frame(woah_data, "WOAH")
+    woah_data['source'] = "WOAH"
+    woah_data = woah_data.drop(columns=['country'])
+    woah_data = woah_data.replace('"','', regex=True)
+    woah_data.sort_values(by=['year'], inplace=True)
+
+
+    woahGrowthRate = helperFunctions.growthRate(woah_data, "population", specie)
+    woahGrowthRate.sort_values(by=['growthRate'], inplace=True)
+
+    data = woahGrowthRate['growthRate'].tolist()
+
+    growthRatesFig2 = ff.create_distplot([data], ["WOAH"], bin_size=0.3, show_rug=False)
+    growthRatesFig2.update_xaxes(title_text='Growth Rate')
+    growthRatesFig2.update_yaxes(title_text='Density')
+
+    #Add the mean and standard deviation to the graph
+    mean = np.mean(data)
+    stdev_pluss = np.std(data)
+    stdev_minus = np.std(data)*-1
+    stdev_pluss2 = np.std(data) * 2
+    stdev_minus2 = np.std(data)*-1 * 2
+    stdev_pluss3 = np.std(data) * 3
+    stdev_minus3 = np.std(data)*-1 * 3
+
+
+    growthRatesFig2.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'blue', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'red', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Black', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'Black', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'orange', dash = 'dash'))
+    growthRatesFig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                line = dict(color = 'orange', dash = 'dash'))
+
+    growthRatesFig2.update_layout(
+        # title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
+        font = dict(
+            size=18,
+        ),
+        plot_bgcolor='white',
+    )
+
+    growthRatesFig2.update_yaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+
+    growthRatesFig2.update_xaxes(
+        type='linear',
+        mirror=True,
+        ticks='outside',
+        showline=True,
+        linecolor='black',
+        gridcolor='lightgrey'
+    )
+    return growthRatesFig2
+
+
+# @app.callback(
+#     Output("growthRatesGraph3", "figure"),
+#     Input("species_checklist", "value"),
+#     Input("country_checklist", "value"))
+# def updateGrowthRatesGraph3(specie, country):
+#     if specie == None:
+#         specie = species[0]
+
+#     if country == "USA":
+#         csv_data = csv.get_data("United%20States%20of%20America", specie)
+
+#     elif country == None:
+#         csv_data = csv.get_data(countries[0], specie)
+
+#     else:
+#         csv_data = csv.get_data(country, specie)
+
+#     csv_data = str2frame(csv_data, "Census")
+#     csv_data['source'] = "Census"
+#     csv_data = csv_data.drop(columns=['country'])
+#     csv_data = csv_data.replace('"','', regex=True)
+#     csv_data.sort_values(by=['year'], inplace=True)
+
+#     #Only get the rows that have the correct specie
+#     new_csv_data = []
+#     for index, row in csv_data.iterrows():
+#         if row['species'] == specie:
+#             new_csv_data.append( [row['year'], row['population']] )
+
+#     csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
+
+#     CensusGrowthRate = helperFunctions.growthRate(csv_data, "population", specie)
+#     CensusGrowthRate.sort_values(by=['growthRate'], inplace=True)
+
+#     data = CensusGrowthRate['growthRate'].tolist()
+
+#     growthRatesFig3 = ff.create_distplot([data], ["Census"], bin_size=0.3, show_rug=False)
+#     growthRatesFig3.update_xaxes(title_text='Growth Rate')
+#     growthRatesFig3.update_yaxes(title_text='Density')
+
+#     #Add the mean and standard deviation to the graph
+#     mean = np.mean(data)
+#     stdev_pluss = np.std(data)
+#     stdev_minus = np.std(data)*-1
+#     stdev_pluss2 = np.std(data) * 2
+#     stdev_minus2 = np.std(data)*-1 * 2
+#     stdev_pluss3 = np.std(data) * 3
+#     stdev_minus3 = np.std(data)*-1 * 3
+
+
+#     growthRatesFig3.add_shape(type="line", x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'blue', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line", x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'red', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line", x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'red', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'black', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'black', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'orange', dash = 'dash'))
+#     growthRatesFig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+#                 line = dict(color = 'orange', dash = 'dash'))
+
+#     growthRatesFig3.update_layout(
+#         font = dict(
+#             size=18,
+#         ),
+#         plot_bgcolor='white',
+#     )
+
+#     growthRatesFig3.update_yaxes(
+#         type='linear',
+#         mirror=True,
+#         ticks='outside',
+#         showline=True,
+#         linecolor='black',
+#         gridcolor='lightgrey'
+#     )
+
+#     growthRatesFig3.update_xaxes(
+#         type='linear',
+#         mirror=True,
+#         ticks='outside',
+#         showline=True,
+#         linecolor='black',
+#         gridcolor='lightgrey'
+#     )
+#     return growthRatesFig3
+
+
+@app.callback(
+    Output("growthRatesGraph4", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph4(specie, country):
+
+    national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
+    NationalGrowthRate = helperFunctions.growthRate(national_data, "population", specie)
+    print("national data ", NationalGrowthRate)
+    NationalGrowthRate.sort_values(by=['growthRate'], inplace=True)
+
+    data = NationalGrowthRate['growthRate'].tolist()
+    growthRatesFig = None
+
+    if len(data) == 1:
+        return html.Div(html.Br())
+    else:
+        try:
+            print("data", data)
+            growthRatesFig = ff.create_distplot([data], ["National"], bin_size=0.3, show_rug=False)
+            growthRatesFig.update_xaxes(title_text='Growth Rate')
+            growthRatesFig.update_yaxes(title_text='Density')
+
+            #Add the mean and standard deviation to the graph
+            mean = np.mean(data)
+            stdev_pluss = np.std(data)
+            stdev_minus = np.std(data)*-1
+            stdev_pluss2 = np.std(data) * 2
+            stdev_minus2 = np.std(data)*-1 * 2
+            stdev_pluss3 = np.std(data) * 3
+            stdev_minus3 = np.std(data)*-1 * 3
+
+            growthRatesFig.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'blue', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'red', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'red', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'black', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'black', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'orange', dash = 'dash'))
+            growthRatesFig.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'orange', dash = 'dash'))
+
+            growthRatesFig.update_layout(
+                font = dict(
+                    size=18,
+                ),
+                plot_bgcolor='white',
+            )
+
+            growthRatesFig.update_yaxes(
+                type='linear',
+                mirror=True,
+                ticks='outside',
+                showline=True,
+                linecolor='black',
+                gridcolor='lightgrey'
+            )
+
+            growthRatesFig.update_xaxes(
+                type='linear',
+                mirror=True,
+                ticks='outside',
+                showline=True,
+                linecolor='black',
+                gridcolor='lightgrey'
+            )
+
+            return growthRatesFig
+
+        except Exception as e:
+            print("Fig 4 exception")
+            print("Exception is: ", e)
+            return ff.create_distplot([], [])
+
+
+@app.callback(
+    Output("endYearDropDown", "value"),
+    Input("startYearDropDown", "value"),
+    Input("endYearDropDown", "value"))
+def updateEndYearDropDown(startYear, endYear):
+    if startYear >= endYear:
+        return 2019
+    else:
+        return endYear
 
 
 @app.callback(
@@ -581,8 +949,13 @@ def createIqrHeader(specie, country):
 @app.callback(
     Output("iqrGraph", "figure"),
     Input("species_checklist", "value"),
-    Input("country_checklist", "value"))
-def createIqrGraph(specie, country):
+    Input("country_checklist", "value"),
+    Input("startYearDropDown", "value"),
+    Input("endYearDropDown", "value"),)
+def createIqrGraph(specie, country, startYear, endYear):
+    startYear = int(startYear)
+    endYear = int(endYear)
+
     species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if country == "USA":
@@ -622,10 +995,6 @@ def createIqrGraph(specie, country):
     csv_roc = helperFunctions.getROC(csv_data, "population")
     national_roc = helperFunctions.getROC(nationalData, "population")
 
-    # Get the year range from the user
-    startYear = 1960
-    endYear = 2019
-
     #Get the IQR for FAO
     fao_data = fao_roc.values.tolist()
     fao_dict = {}
@@ -643,21 +1012,25 @@ def createIqrGraph(specie, country):
 
     fao_iqr_list.sort()
 
-    firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
-    secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
+    try:
+        firstHalf = fao_iqr_list[:len(fao_iqr_list)//2]
+        secondHalf = fao_iqr_list[len(fao_iqr_list)//2:]
 
-    firstQuartile = firstHalf[:len(firstHalf)//2]
-    secondQuartile = firstHalf[len(firstHalf)//2:]
-    thirdQuartile = secondHalf[:len(secondHalf)//2]
-    fourthQuartile = secondHalf[len(secondHalf)//2:]
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+    except:
+        firstHalf = []
+        secondHalf = []
+        firstQuartile = []
+        thirdQuartile = []
 
 
     fao_q1 = np.median(firstQuartile)
     fao_q3 = np.median(thirdQuartile)
 
-    if firstQuartile == [] or thirdQuartile == []:
-        fao_iqr = None
-    else:
+    fao_iqr = 0
+
+    if firstQuartile != [] and thirdQuartile != []:
         fao_iqr = fao_q3 - fao_q1
 
     #Get the IQR for woah
@@ -677,17 +1050,23 @@ def createIqrGraph(specie, country):
 
     woah_iqr_list.sort()
 
-    firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
-    secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
+    try:
+        firstHalf = woah_iqr_list[:len(woah_iqr_list)//2]
+        secondHalf = woah_iqr_list[len(woah_iqr_list)//2:]
 
-    firstQuartile = firstHalf[:len(firstHalf)//2]
-    secondQuartile = firstHalf[len(firstHalf)//2:]
-    thirdQuartile = secondHalf[:len(secondHalf)//2]
-    fourthQuartile = secondHalf[len(secondHalf)//2:]
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+    except:
+        firstHalf = []
+        secondHalf = []
+        firstQuartile = []
+        thirdQuartile = []
 
-    if firstQuartile == [] or thirdQuartile == []:
-        woah_iqr = None
-    else:
+    woah_iqr = 0
+    woah_q1 = 0
+    woah_q3 = 0
+
+    if firstQuartile != [] and thirdQuartile != []:
         woah_q1 = np.median(firstQuartile)
         woah_q3 = np.median(thirdQuartile)
         woah_iqr = woah_q3 - woah_q1
@@ -707,20 +1086,23 @@ def createIqrGraph(specie, country):
         except:
             continue
 
-    firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
-    secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
+    try:
+        firstHalf = csv_iqr_list[:len(csv_iqr_list)//2]
+        secondHalf = csv_iqr_list[len(csv_iqr_list)//2:]
 
-    firstQuartile = firstHalf[:len(firstHalf)//2]
-    secondQuartile = firstHalf[len(firstHalf)//2:]
-    thirdQuartile = secondHalf[:len(secondHalf)//2]
-    fourthQuartile = secondHalf[len(secondHalf)//2:]
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+    except:
+        firstHalf = []
+        secondHalf = []
+        firstQuartile = []
+        thirdQuartile = []
 
-    csv_iqr = None
-    csv_q1 = None
-    csv_q3 = None
-    if firstQuartile == [] or thirdQuartile == []:
-        csv_iqr = None
-    else:
+    csv_iqr = 0
+    csv_q1 = 0
+    csv_q3 = 0
+
+    if firstQuartile != [] and thirdQuartile != []:
         csv_q1 = np.median(firstQuartile)
         csv_q3 = np.median(thirdQuartile)
         csv_iqr = csv_q3 - csv_q1
@@ -741,17 +1123,23 @@ def createIqrGraph(specie, country):
         except:
             continue
 
-    firstHalf = national_iqr_list[:len(national_iqr_list)//2]
-    secondHalf = national_iqr_list[len(national_iqr_list)//2:]
+    try:
+        firstHalf = national_iqr_list[:len(national_iqr_list)//2]
+        secondHalf = national_iqr_list[len(national_iqr_list)//2:]
 
-    firstQuartile = firstHalf[:len(firstHalf)//2]
-    secondQuartile = firstHalf[len(firstHalf)//2:]
-    thirdQuartile = secondHalf[:len(secondHalf)//2]
-    fourthQuartile = secondHalf[len(secondHalf)//2:]
+        firstQuartile = firstHalf[:len(firstHalf)//2]
+        thirdQuartile = secondHalf[:len(secondHalf)//2]
+    except:
+        firstHalf = []
+        secondHalf = []
+        firstQuartile = []
+        thirdQuartile = []
 
-    if firstQuartile == [] or thirdQuartile == []:
-        national_iqr = None
-    else:
+    national_q1 = 0
+    national_q3 = 0
+    national_iqr = 0
+
+    if firstQuartile != [] and thirdQuartile != []:
         national_q1 = np.median(firstQuartile)
         national_q3 = np.median(thirdQuartile)
         national_iqr = national_q3 - national_q1
@@ -781,10 +1169,6 @@ def createIqrGraph(specie, country):
 
     # Remove the outliers?
     removeOutliers = 'y'
-    # while True:
-    #     removeOutliers = input("Do you want to remove the outliers? (y/n) ").strip()
-    #     if removeOutliers == 'y' or removeOutliers == 'n':
-    #         break
 
     if removeOutliers == 'y':
 
@@ -967,7 +1351,8 @@ def createFiveYearAvgGraph(specie, country):
     woah_percent_change = []
     csv_percent_change = []
     national_percent_change = []
-    yearsArr.pop(0)
+    if len(yearsArr) > 0:
+        yearsArr.pop(0)
 
     for i in range(1, len(fao_averages)):
         if fao_averages[i-1] == 0 or fao_averages[i] == 0:
@@ -1135,24 +1520,24 @@ def populate_dropDown(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    # csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
 
     # Step 4: Get National data
-    # nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     #Fill the dropdown with the available sources
     sources = []
-    # if fao_data.empty == False:
-    sources.append("FAOSTAT")
+    if fao_data.empty == False:
+        sources.append("FAOSTAT")
 
-    # if woah_data.empty == False:
-    sources.append("WOAH")
+    if woah_data.empty == False:
+        sources.append("WOAH")
 
-    # if csv_data.empty == False:
-    sources.append("UN Census Data")
+    if csv_data.empty == False:
+        sources.append("UN Census Data")
 
-    # if nationalData.empty == False:
-    sources.append("National Census Data")
+    if nationalData.empty == False:
+        sources.append("National Census Data")
 
     if sources == []:
         sources = ["No Options Available"]
@@ -1245,16 +1630,14 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
             new_model.fit(x_new, y)
 
             #Add in any missing years
-            for i in range(1960, x[-1]+1):
-                if i not in x:
-                    x = np.append(x, i)
+            for j in range(1960, x[-1]+1):
+                if j not in x:
+                    x = np.append(x, j)
 
             x.sort()
 
             #Add in the predicted value years
-            print("x[-1]: ", x[-1])
-            print(x)
-            x = np.append(x, [i for i in range(x[-1] + 1, maxYear+1)])
+            x = np.append(x, [j for j in range(x[-1] + 1, maxYear+1)])
             x_new = model.fit_transform(x.reshape(-1, 1))
             ypredict = new_model.predict(x_new)
 
@@ -1380,6 +1763,14 @@ def update_line_chart(specie, country):
     )
     return fig
 
+
+def str2frame(estr, source, sep = ',', lineterm = '\n'):
+    dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
+    if source == "faostat":
+        df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
+    elif source == "WOAH":
+        df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
+    return df
 
 if __name__ == '__main__':
     app.run_server(debug=True)

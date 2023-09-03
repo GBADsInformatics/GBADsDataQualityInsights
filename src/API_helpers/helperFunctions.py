@@ -67,7 +67,7 @@ def getFormattedCensusData(country, specie, species):
 
     return csv_data, csv_index_list, species
 
-def getFormattedNationalData(country, specie, species):
+def getFormattedNationalData(country, specie, species = []):
 
     try:
         nationalData = pd.read_csv(f"nationalData/{country}.csv")
