@@ -19,8 +19,7 @@ import plotly.figure_factory as ff
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 sources   = ['No Options Available']
-specie    = "Cattle"
-country   = "USA"
+
 
 #Build a Plotly graph around the data
 app = Dash(__name__)
@@ -86,8 +85,6 @@ def render_content(tab):
     country = "USA"
 
     if tab == 'polyRegress':
-
-
         return html.Div([
             html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources using Polynomial Regression'),
 
@@ -128,9 +125,7 @@ def render_content(tab):
         ])
 
     elif tab == 'growthRates':
-        species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
         specie    = "Cattle"
-        country   = "USA"
 
         def str2frame(estr, source, sep = ',', lineterm = '\n'):
             dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
@@ -139,7 +134,7 @@ def render_content(tab):
             elif source == "WOAH":
                 df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
             return df
-
+        
         if specie == None:
             specie = species[0]
 
@@ -158,7 +153,6 @@ def render_content(tab):
         woah_data = woah.formatWoahData(woah_data)
         census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
         national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
-
 
         # Get the outliers from the FAO Data
         fao_data = str2frame(fao_data, "faostat")
@@ -199,11 +193,11 @@ def render_content(tab):
             print("Error, count not find the correct csv file")
             nationalData = pd.DataFrame()
 
-        FaoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
-        FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
+        faoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
+        faoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
-        def createGrowthRateFig1(FaoGrowthRate):
-            data = FaoGrowthRate['growthRate'].tolist()
+        def createGrowthRateFig1(faoGrowthRate):
+            data = faoGrowthRate['growthRate'].tolist()
 
             growthRatesFig1 = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3, show_rug=False)
             growthRatesFig1.update_xaxes(title_text='Growth Rate')
@@ -264,8 +258,8 @@ def render_content(tab):
             fao_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
             for i in range(len(data)):
-                if FaoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or FaoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
-                    data = [FaoGrowthRate.iloc[i]['year'], FaoGrowthRate.iloc[i]['growthRate']]
+                if faoGrowthRate.iloc[i]['growthRate'] > stdev_pluss * 3 or faoGrowthRate.iloc[i]['growthRate'] < stdev_minus * 3:
+                    data = [faoGrowthRate.iloc[i]['year'], faoGrowthRate.iloc[i]['growthRate']]
                     row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
                     fao_outliers = pd.concat([fao_outliers, row], axis=0)
 
@@ -439,11 +433,10 @@ def render_content(tab):
                             census_outliers = pd.concat([census_outliers, row], axis=0)
 
                 except Exception as e:
-                    print("Fig 3 exception")
-                    print("Exception is: ", e)
+                    print("Fig 3 exception. Exception is: ", e)
                     return html.Div(html.Br())
 
-                return html.Div([
+                return html.Div(children = [
                     html.H3(children='Census Data for ' + specie + " in " + country),
                     dcc.Graph(id='growthRatesGraph3', figure=growthRatesFig3),
                     dash_table.DataTable(
@@ -452,7 +445,7 @@ def render_content(tab):
                             for i in census_outliers.columns],
                         data=census_outliers.to_dict('records'),
                     ),
-                ])
+                ], id="growthRatesGraph3Div")
 
         #National Data
         NationalGrowthRate = helperFunctions.growthRate(national_data, "population", specie)
@@ -463,7 +456,6 @@ def render_content(tab):
             growthRatesFig = None
 
             if len(data) == 1:
-                print("here")
                 return html.Div(html.Br())
             else:
                 census_outliers = pd.DataFrame(columns=['year', "growthRate"])
@@ -533,11 +525,10 @@ def render_content(tab):
                             national_outliers = pd.concat([national_outliers, row], axis=0)
 
                 except Exception as e:
-                    print("Fig 4 exception")
-                    print("Exception is: ", e)
+                    print("Fig 4 exception. Exception is: ", e)
                     return html.Div(html.Br())
 
-                return html.Div([
+                return html.Div(children = [
                     html.H3(children='National Data for ' + specie + " in " + country),
                     dcc.Graph(id='growthRatesGraph4', figure=growthRatesFig),
                     dash_table.DataTable(
@@ -546,14 +537,13 @@ def render_content(tab):
                             for i in census_outliers.columns],
                         data=census_outliers.to_dict('records'),
                     ),
-                ])
+                ], id="growthRatesGraph4Div")
 
         return html.Div([
-            createGrowthRateFig1(FaoGrowthRate),
+            createGrowthRateFig1(faoGrowthRate),
             createGrowthRateFig2(woahGrowthRate),
             createGrowthRateFig3(CensusGrowthRate),
             createGrowthRateFig4(NationalGrowthRate),
-
         ])
 
     elif tab == 'iqr':
@@ -604,10 +594,10 @@ def updateGrowthRatesGraph1(specie, country):
     fao_data = fao_data.replace('"','', regex=True)
     fao_data.sort_values(by=['year'], inplace=True)
 
-    FaoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
-    FaoGrowthRate.sort_values(by=['growthRate'], inplace=True)
+    faoGrowthRate = helperFunctions.growthRate(fao_data, "population", specie)
+    faoGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
-    data = FaoGrowthRate['growthRate'].tolist()
+    data = faoGrowthRate['growthRate'].tolist()
 
     growthRatesFig1 = ff.create_distplot([data], ["FAOSTAT"], bin_size=0.3, show_rug=False)
     growthRatesFig1.update_xaxes(title_text='Growth Rate')
@@ -728,9 +718,7 @@ def updateGrowthRatesGraph2(specie, country):
     growthRatesFig2.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'orange', dash = 'dash'))
 
-    growthRatesFig2.update_layout(
-        # title="Distribution of Growth Rates for WOAH Data for " + specie + " in " + country,
-        font = dict(
+    growthRatesFig2.update_layout(        font = dict(
             size=18,
         ),
         plot_bgcolor='white',
@@ -756,122 +744,117 @@ def updateGrowthRatesGraph2(specie, country):
     return growthRatesFig2
 
 
-# @app.callback(
-#     Output("growthRatesGraph3", "figure"),
-#     Input("species_checklist", "value"),
-#     Input("country_checklist", "value"))
-# def updateGrowthRatesGraph3(specie, country):
-#     if specie == None:
-#         specie = species[0]
+@app.callback(
+    Output("growthRatesGraph3Div", "children"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"),
+    Input("species_checklist", "options"))
+def updateGrowthRatesGraph3(specie, country, species):
+    census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    CensusGrowthRate = helperFunctions.growthRate(census_data, "population", specie)
+    CensusGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
-#     if country == "USA":
-#         csv_data = csv.get_data("United%20States%20of%20America", specie)
+    data = CensusGrowthRate['growthRate'].tolist()
 
-#     elif country == None:
-#         csv_data = csv.get_data(countries[0], specie)
+    if len(data) == 1:
+        return html.Br()
 
-#     else:
-#         csv_data = csv.get_data(country, specie)
+    else:
+        try:
+            census_outliers = pd.DataFrame(columns=['year', "growthRate"])
 
-#     csv_data = str2frame(csv_data, "Census")
-#     csv_data['source'] = "Census"
-#     csv_data = csv_data.drop(columns=['country'])
-#     csv_data = csv_data.replace('"','', regex=True)
-#     csv_data.sort_values(by=['year'], inplace=True)
+            growthRatesFig3 = ff.create_distplot([data], ["Census"], bin_size=0.3, show_rug=False)
+            growthRatesFig3.update_xaxes(title_text='Growth Rate')
+            growthRatesFig3.update_yaxes(title_text='Density')
 
-#     #Only get the rows that have the correct specie
-#     new_csv_data = []
-#     for index, row in csv_data.iterrows():
-#         if row['species'] == specie:
-#             new_csv_data.append( [row['year'], row['population']] )
-
-#     csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
-
-#     CensusGrowthRate = helperFunctions.growthRate(csv_data, "population", specie)
-#     CensusGrowthRate.sort_values(by=['growthRate'], inplace=True)
-
-#     data = CensusGrowthRate['growthRate'].tolist()
-
-#     growthRatesFig3 = ff.create_distplot([data], ["Census"], bin_size=0.3, show_rug=False)
-#     growthRatesFig3.update_xaxes(title_text='Growth Rate')
-#     growthRatesFig3.update_yaxes(title_text='Density')
-
-#     #Add the mean and standard deviation to the graph
-#     mean = np.mean(data)
-#     stdev_pluss = np.std(data)
-#     stdev_minus = np.std(data)*-1
-#     stdev_pluss2 = np.std(data) * 2
-#     stdev_minus2 = np.std(data)*-1 * 2
-#     stdev_pluss3 = np.std(data) * 3
-#     stdev_minus3 = np.std(data)*-1 * 3
+            #Add the mean and standard deviation to the graph
+            mean = np.mean(data)
+            stdev_pluss = np.std(data)
+            stdev_minus = np.std(data)*-1
+            stdev_pluss2 = np.std(data) * 2
+            stdev_minus2 = np.std(data)*-1 * 2
+            stdev_pluss3 = np.std(data) * 3
+            stdev_minus3 = np.std(data)*-1 * 3
 
 
-#     growthRatesFig3.add_shape(type="line", x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'blue', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line", x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'red', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line", x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'red', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'black', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'black', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'orange', dash = 'dash'))
-#     growthRatesFig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
-#                 line = dict(color = 'orange', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line", x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'blue', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line", x0=stdev_pluss, x1=stdev_pluss, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'red', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line", x0=stdev_minus, x1=stdev_minus, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'red', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line",x0=stdev_pluss2, x1=stdev_pluss2, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'black', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line",x0=stdev_minus2, x1=stdev_minus2, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'black', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line",x0=stdev_pluss3, x1=stdev_pluss3, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'orange', dash = 'dash'))
+            growthRatesFig3.add_shape(type="line",x0=stdev_minus3, x1=stdev_minus3, y0 =0, y1=0.4 , xref='x', yref='y',
+                        line = dict(color = 'orange', dash = 'dash'))
 
-#     growthRatesFig3.update_layout(
-#         font = dict(
-#             size=18,
-#         ),
-#         plot_bgcolor='white',
-#     )
+            growthRatesFig3.update_layout(
+                font = dict(
+                    size=18,
+                ),
+                plot_bgcolor='white',
+            )
 
-#     growthRatesFig3.update_yaxes(
-#         type='linear',
-#         mirror=True,
-#         ticks='outside',
-#         showline=True,
-#         linecolor='black',
-#         gridcolor='lightgrey'
-#     )
+            growthRatesFig3.update_yaxes(
+                type='linear',
+                mirror=True,
+                ticks='outside',
+                showline=True,
+                linecolor='black',
+                gridcolor='lightgrey'
+            )
 
-#     growthRatesFig3.update_xaxes(
-#         type='linear',
-#         mirror=True,
-#         ticks='outside',
-#         showline=True,
-#         linecolor='black',
-#         gridcolor='lightgrey'
-#     )
-#     return growthRatesFig3
+            growthRatesFig3.update_xaxes(
+                type='linear',
+                mirror=True,
+                ticks='outside',
+                showline=True,
+                linecolor='black',
+                gridcolor='lightgrey'
+            )
+            return [
+                html.H3(children='Census Data for ' + specie + " in " + country),
+                dcc.Graph(id='growthRatesGraph3', figure=growthRatesFig3),
+                dash_table.DataTable(
+                    id='table3',
+                    columns=[{"name": i, "id": i}
+                        for i in census_outliers.columns],
+                    data=census_outliers.to_dict('records'),
+                ),
+            ]
+        except:
+            return html.Br()
+    
 
 
 @app.callback(
-    Output("growthRatesGraph4", "figure"),
+    Output("growthRatesGraph4Div", "children"),
     Input("species_checklist", "value"),
-    Input("country_checklist", "value"))
-def updateGrowthRatesGraph4(specie, country):
-
-    national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
+    Input("country_checklist", "value"),
+    Input("species_checklist", "options"))
+def updateGrowthRatesGraph4(specie, country, species):
+    national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
     NationalGrowthRate = helperFunctions.growthRate(national_data, "population", specie)
-    print("national data ", NationalGrowthRate)
     NationalGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
     data = NationalGrowthRate['growthRate'].tolist()
     growthRatesFig = None
 
     if len(data) == 1:
-        return html.Div(html.Br())
+        return html.Br()
     else:
         try:
-            print("data", data)
+            census_outliers = pd.DataFrame(columns=['year', "growthRate"])
+
             growthRatesFig = ff.create_distplot([data], ["National"], bin_size=0.3, show_rug=False)
             growthRatesFig.update_xaxes(title_text='Growth Rate')
             growthRatesFig.update_yaxes(title_text='Density')
 
-            #Add the mean and standard deviation to the graph
+            # Add the mean and standard deviation to the graph
             mean = np.mean(data)
             stdev_pluss = np.std(data)
             stdev_minus = np.std(data)*-1
@@ -920,12 +903,19 @@ def updateGrowthRatesGraph4(specie, country):
                 gridcolor='lightgrey'
             )
 
-            return growthRatesFig
+            return [
+                html.H3(children='National Data for ' + specie + " in " + country),
+                dcc.Graph(id='growthRatesGraph4', figure=growthRatesFig),
+                dash_table.DataTable(
+                    id='table3',
+                    columns=[{"name": i, "id": i}
+                        for i in census_outliers.columns],
+                    data=census_outliers.to_dict('records'),
+                ),
+            ]
 
         except Exception as e:
-            print("Fig 4 exception")
-            print("Exception is: ", e)
-            return ff.create_distplot([], [])
+            return html.Br()
 
 
 @app.callback(
@@ -1720,7 +1710,6 @@ def update_line_chart(specie, country):
     nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     # Build a master dataframe
-    #master_df = pd.concat([fao_data, woah_data, csv_data.iloc, nationalData.iloc])
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
     # Build the plotly graph
@@ -1747,7 +1736,6 @@ def update_line_chart(specie, country):
         linecolor='black',
         gridcolor='lightgrey'
     )
-
 
     fig.update_traces(line=dict(width=5))
 

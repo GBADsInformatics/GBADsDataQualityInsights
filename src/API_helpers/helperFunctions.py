@@ -28,7 +28,7 @@ def getROC(df, field):
 def growthRate(df, field, specie):
     growthRates = pd.DataFrame(columns=['year', "growthRate"])
 
-    if df.empty:
+    if len(df.columns) == 0:
         return growthRates
 
     df = df[df['species'] == specie]
