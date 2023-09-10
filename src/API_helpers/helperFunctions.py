@@ -44,10 +44,11 @@ def growthRate(df, field, specie):
 
 
 def str2frame(estr, source, sep = ',', lineterm = '\n'):
+    source = source.upper()
     dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
     if source == "FAOSTAT":
         df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
-    elif source == "WOAH":
+    else:
         df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
     return df
 

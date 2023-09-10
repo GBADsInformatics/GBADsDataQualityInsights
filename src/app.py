@@ -127,14 +127,6 @@ def render_content(tab):
     elif tab == 'growthRates':
         specie    = "Cattle"
 
-        def str2frame(estr, source, sep = ',', lineterm = '\n'):
-            dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
-            if source == "faostat":
-                df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
-            elif source == "WOAH":
-                df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
-            return df
-        
         if specie == None:
             specie = species[0]
 
@@ -155,7 +147,7 @@ def render_content(tab):
         national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
         # Get the outliers from the FAO Data
-        fao_data = str2frame(fao_data, "faostat")
+        fao_data = helperFunctions.str2frame(fao_data, "faostat")
         fao_data['source'] = "faostat"
         fao_data = fao_data.drop(columns=['iso3', "country"])
         fao_data = fao_data.replace('"','', regex=True)
@@ -166,7 +158,7 @@ def render_content(tab):
             woah_data = woah.get_data("United%20States%20of%20America", specie)
         else:
             woah_data = woah.get_data(country, specie)
-        woah_data = str2frame(woah_data, "WOAH")
+        woah_data = helperFunctions.str2frame(woah_data, "WOAH")
         woah_data['source'] = "WOAH"
         woah_data = woah_data.drop(columns=['country'])
         woah_data = woah_data.replace('"','', regex=True)
@@ -229,7 +221,6 @@ def render_content(tab):
                         line = dict(color = 'orange', dash = 'dash'))
 
             growthRatesFig1.update_layout(
-                # title="Distribution of Growth Rates for FAOSTAT Data for " + specie + " in " + country,
                 font = dict(
                     size=18,
                 ),
@@ -264,7 +255,7 @@ def render_content(tab):
                     fao_outliers = pd.concat([fao_outliers, row], axis=0)
 
             return html.Div([
-                html.H3(children='FAOSTAT Data for ' + specie + " in " + country),
+                html.H3(children='FAOSTAT Data for ' + specie + " in " + country, id="growthRatesGraph1Header"),
                 dcc.Graph(id='growthRatesGraph1', figure=growthRatesFig1),
                 dash_table.DataTable(
                     id='table',
@@ -293,7 +284,6 @@ def render_content(tab):
             stdev_minus2 = np.std(data)*-1 * 2
             stdev_pluss3 = np.std(data) * 3
             stdev_minus3 = np.std(data)*-1 * 3
-
 
             growthRatesFig2.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
                         line = dict(color = 'blue', dash = 'dash'))
@@ -347,7 +337,7 @@ def render_content(tab):
 
 
             return html.Div([
-                html.H3(children='WOAH Data for ' + specie + " in " + country),
+                html.H3(children='WOAH Data for ' + specie + " in " + country, id="growthRatesGraph2Header"),
                 dcc.Graph(id='growthRatesGraph2', figure=growthRatesFig2),
                 dash_table.DataTable(
                     id='table2',
@@ -434,7 +424,7 @@ def render_content(tab):
 
                 except Exception as e:
                     print("Fig 3 exception. Exception is: ", e)
-                    return html.Div(html.Br())
+                    return html.Div(children=[html.Br()], id="growthRatesGraph3Div")
 
                 return html.Div(children = [
                     html.H3(children='Census Data for ' + specie + " in " + country),
@@ -588,7 +578,7 @@ def updateGrowthRatesGraph1(specie, country):
         fao_data = fao.get_data(country, specie)
 
     # Get the outliers from the FAO Data
-    fao_data = str2frame(fao_data, "faostat")
+    fao_data = helperFunctions.str2frame(fao_data, "faostat")
     fao_data['source'] = "faostat"
     fao_data = fao_data.drop(columns=['iso3', "country"])
     fao_data = fao_data.replace('"','', regex=True)
@@ -655,6 +645,23 @@ def updateGrowthRatesGraph1(specie, country):
     )
     return growthRatesFig1
 
+
+@app.callback(
+    Output("growthRatesGraph1Header", "children"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph1Header(specie, country):
+    return 'FAOSTAT Data for ' + specie + " in " + country
+
+
+@app.callback(
+    Output("growthRatesGraph2Header", "children"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph1Header(specie, country):
+    return 'WOAH Data for ' + specie + " in " + country
+
+
 @app.callback(
     Output("growthRatesGraph2", "figure"),
     Input("species_checklist", "value"),
@@ -677,7 +684,7 @@ def updateGrowthRatesGraph2(specie, country):
         woah_data = woah.get_data("United%20States%20of%20America", specie)
     else:
         woah_data = woah.get_data(country, specie)
-    woah_data = str2frame(woah_data, "WOAH")
+    woah_data = helperFunctions.str2frame(woah_data, "WOAH")
     woah_data['source'] = "WOAH"
     woah_data = woah_data.drop(columns=['country'])
     woah_data = woah_data.replace('"','', regex=True)
@@ -702,6 +709,8 @@ def updateGrowthRatesGraph2(specie, country):
     stdev_pluss3 = np.std(data) * 3
     stdev_minus3 = np.std(data)*-1 * 3
 
+    print("A")
+
 
     growthRatesFig2.add_shape(type="line",x0=mean, x1=mean, y0 =0, y1=0.4 , xref='x', yref='y',
                 line = dict(color = 'blue', dash = 'dash'))
@@ -723,6 +732,7 @@ def updateGrowthRatesGraph2(specie, country):
         ),
         plot_bgcolor='white',
     )
+    print("B")
 
     growthRatesFig2.update_yaxes(
         type='linear',
@@ -741,6 +751,7 @@ def updateGrowthRatesGraph2(specie, country):
         linecolor='black',
         gridcolor='lightgrey'
     )
+    print("C")
     return growthRatesFig2
 
 
@@ -750,6 +761,7 @@ def updateGrowthRatesGraph2(specie, country):
     Input("country_checklist", "value"),
     Input("species_checklist", "options"))
 def updateGrowthRatesGraph3(specie, country, species):
+    print("HERE")
     census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
     CensusGrowthRate = helperFunctions.growthRate(census_data, "population", specie)
     CensusGrowthRate.sort_values(by=['growthRate'], inplace=True)
@@ -828,7 +840,6 @@ def updateGrowthRatesGraph3(specie, country, species):
             ]
         except:
             return html.Br()
-    
 
 
 @app.callback(
@@ -1197,9 +1208,6 @@ def createIqrGraph(specie, country, startYear, endYear):
 
                 if index + 1 >= len(national_roc):
                     break
-
-
-    # This next section is for the boxplots, you don't need the above data for this
 
     #Fao
     faoCopy = fao_roc['rateOfChange'].copy().to_frame()
@@ -1750,15 +1758,6 @@ def update_line_chart(specie, country):
         plot_bgcolor='white',
     )
     return fig
-
-
-def str2frame(estr, source, sep = ',', lineterm = '\n'):
-    dat = [x.split(sep) for x in estr.split(lineterm)][1:-1]
-    if source == "faostat":
-        df = pd.DataFrame(dat, columns=['iso3', "country", 'year', 'species', 'population'] )
-    elif source == "WOAH":
-        df = pd.DataFrame(dat, columns=["country", 'year', 'species', 'population', "source"] )
-    return df
 
 if __name__ == '__main__':
     app.run_server(debug=True)
