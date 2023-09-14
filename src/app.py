@@ -1,5 +1,6 @@
 # Using Polynomial Regression to Predict Animal Populations
 
+import os
 import sys
 sys.path.append('../../src')
 from sklearn.linear_model import LinearRegression
@@ -14,7 +15,10 @@ from sklearn.preprocessing import PolynomialFeatures
 import plotly.graph_objects as go
 import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
+from flask import Flask, redirect
 
+# Get app base URL
+BASE_URL = os.getenv('BASE_URL','')
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
@@ -22,7 +26,7 @@ sources   = ['No Options Available']
 
 
 #Build a Plotly graph around the data
-app = Dash(__name__)
+app = Dash(__name__, requests_pathname_prefix=BASE_URL+'/')
 app.config["suppress_callback_exceptions"] = True
 app.title = "GBADs Informatics User Vizualizer"
 
@@ -1828,3 +1832,22 @@ def update_line_chart(specie, country):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+def returnApp():
+    """
+    This function is used to create the app and return it to waitress in the docker container
+    """
+    # If BASE_URL is set, use DispatcherMiddleware to serve the app from that path
+    if 'BASE_URL' in os.environ:
+        from werkzeug.middleware.dispatcher import DispatcherMiddleware
+        app.wsgi_app = DispatcherMiddleware(Flask('dummy_app'), {
+            BASE_URL: app.server
+        })
+        # Add redirect to new path
+        @app.wsgi_app.app.route('/')
+        def redirect_to_dashboard():
+            return redirect(BASE_URL)
+        return app.wsgi_app
+
+    # If no BASE_URL is set, just return the app server
+    return app.server
