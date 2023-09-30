@@ -85,8 +85,6 @@ def groupBy5Years(data, startYear, endYear, type):
         Output('contents', 'children'),
         Input('tabs', 'value'))
 def render_content(tab):
-    species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
-    country = "USA"
 
     if tab == 'polyRegress':
         return html.Div([
@@ -129,10 +127,9 @@ def render_content(tab):
         ])
 
     elif tab == 'growthRates':
-        specie    = "Cattle"
-
-        if specie == None:
-            specie = species[0]
+        specie = "Cattle"
+        country = "Ethiopia"
+        species = []
 
         if country == "USA":
             fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -147,8 +144,8 @@ def render_content(tab):
             woah_data = woah.get_data(country, specie)
 
         woah_data = woah.formatWoahData(woah_data)
-        census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
-        national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+        census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
+        national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
 
         # Get the outliers from the FAO Data
         fao_data = helperFunctions.str2frame(fao_data, "faostat")
@@ -544,18 +541,23 @@ def render_content(tab):
             dcc.Graph(id='iqrGraph'),
 
             html.H3(children='Year Range'),
-            html.Div([
+            html.Div(children=[
+                html.H3(children='Select the range of years you would like to see'),
                 dcc.Dropdown(
                     id='startYearDropDown',
-                    options=[{'label': i, 'value': i} for i in range(1960, 2019)],
-                    value=1961
+                    options=[{'label': i, 'value': i} for i in range(1993, 2019)],
+                    value=1993
                 ),
                 dcc.Dropdown(
                     id='endYearDropDown',
-                    options=[{'label': i, 'value': i} for i in range(1961, 2020)],
-                    value=2018
+                    options=[{'label': i, 'value': i} for i in range(1961, 2021)],
+                    value=2020
                 ),
-            ], style={'width': '49%', 'display': 'inline-block'}),
+            ],
+            style={'width': '49%', 'display': 'inline-block'},
+            id = "iqrDataRangeDropDowns"),
+
+            dcc.Checklist(options=['Remove Outliers'], value=[], id="removeOutliers"),
         ])
 
     else:
@@ -809,14 +811,12 @@ def updateGrowthRatesGraph2(specie, country):
             return html.Div(html.Br())
 
 
-
 @app.callback(
     Output("growthRatesGraph3Div", "children"),
     Input("species_checklist", "value"),
-    Input("country_checklist", "value"),
-    Input("species_checklist", "options"))
-def updateGrowthRatesGraph3(specie, country, species):
-    census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph3(specie, country):
+    census_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
     censusGrowthRate = helperFunctions.growthRate(census_data, "population", specie)
     censusGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
@@ -909,10 +909,9 @@ def updateGrowthRatesGraph3(specie, country, species):
 @app.callback(
     Output("growthRatesGraph4Div", "children"),
     Input("species_checklist", "value"),
-    Input("country_checklist", "value"),
-    Input("species_checklist", "options"))
-def updateGrowthRatesGraph4(specie, country, species):
-    national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    Input("country_checklist", "value"))
+def updateGrowthRatesGraph4(specie, country):
+    national_data, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
     NationalGrowthRate = helperFunctions.growthRate(national_data, "population", specie)
     NationalGrowthRate.sort_values(by=['growthRate'], inplace=True)
 
@@ -1001,34 +1000,10 @@ def updateGrowthRatesGraph4(specie, country, species):
 
 
 @app.callback(
-    Output("endYearDropDown", "value"),
-    Input("startYearDropDown", "value"),
-    Input("endYearDropDown", "value"))
-def updateEndYearDropDown(startYear, endYear):
-    if startYear >= endYear:
-        return 2019
-    else:
-        return endYear
-
-
-@app.callback(
-    Output("iqrGraph", "children"),
+    Output("iqrDataRangeDropDowns", "children"),
     Input("species_checklist", "value"),
     Input("country_checklist", "value"))
-def createIqrHeader(specie, country):
-    return f'IQR of Rate of Change of Population for ' + specie + " in " + country
-
-@app.callback(
-    Output("iqrGraph", "figure"),
-    Input("species_checklist", "value"),
-    Input("country_checklist", "value"),
-    Input("startYearDropDown", "value"),
-    Input("endYearDropDown", "value"),)
-def createIqrGraph(specie, country, startYear, endYear):
-    startYear = int(startYear)
-    endYear = int(endYear)
-
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
+def updateStartAndEndYearDropDowns(specie, country):
 
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -1041,7 +1016,7 @@ def createIqrGraph(specie, country, startYear, endYear):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census Data
-    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie)
 
     #Only get the rows that have the correct specie
     new_csv_data = []
@@ -1052,7 +1027,131 @@ def createIqrGraph(specie, country, startYear, endYear):
     csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
 
     # Step 4: Get National Data
-    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie)
+
+    new_national_data = []
+    for index, row in nationalData.iterrows():
+        if row['species'] == specie:
+            new_national_data.append( [row['year'], row['population']] )
+
+    nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
+
+    def findLowestYear(df):
+        years = df.year.unique()
+        print("years = ", years)
+        years.sort()
+        if years.size == 0:
+            return 2021, 1959
+        elif years.size == 1:
+            return years[0], years[0]
+
+        else:
+            return years[0], years[-1]
+
+    lowestYear, greatestYear = findLowestYear(fao_data)
+    woahLowestYear, woahGreatestYear = findLowestYear(woah_data)
+
+    if woahLowestYear < lowestYear:
+        lowestYear = woahLowestYear
+
+    if woahGreatestYear > greatestYear:
+        greatestYear = woahGreatestYear
+
+    csvLowestYear, csvGreatestYear = findLowestYear(csv_data)
+
+    if csvLowestYear < lowestYear:
+        lowestYear = csvLowestYear
+
+    if csvGreatestYear > greatestYear:
+        greatestYear = csvGreatestYear
+
+    nationalLowestYear, nationalDataGreatestYear = findLowestYear(nationalData)
+
+    if nationalLowestYear < lowestYear:
+        lowestYear = nationalLowestYear
+
+    if nationalDataGreatestYear > greatestYear:
+        greatestYear = nationalDataGreatestYear
+
+    print("Lowest year", lowestYear)
+    print("Greatest year", greatestYear)
+
+    return html.Div([
+        html.H3(children='Select the range of years you would like to see'),
+        dcc.Dropdown(
+            id='startYearDropDown',
+            options=[{'label': i, 'value': i} for i in range(lowestYear, greatestYear + 1)],
+            value=lowestYear
+        ),
+        dcc.Dropdown(
+            id='endYearDropDown',
+            options=[{'label': i, 'value': i} for i in range(lowestYear, greatestYear + 1)],
+            value=greatestYear
+        ),
+    ])
+
+
+@app.callback(
+    Output("endYearDropDown", "value"),
+    Input("startYearDropDown", "value"),
+    Input("endYearDropDown", "value"))
+def updateEndYearDropDown(startYear, endYear):
+    if startYear == None or endYear == None:
+        return None
+
+    elif startYear >= endYear:
+        return 2019
+
+    else:
+        return endYear
+
+
+@app.callback(
+    Output("iqrHeader", "children"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"))
+def createIqrHeader(specie, country):
+    return f'IQR of Rate of Change of Population for ' + specie + " in " + country
+
+@app.callback(
+    Output("iqrGraph", "figure"),
+    Input("species_checklist", "value"),
+    Input("country_checklist", "value"),
+    Input("startYearDropDown", "value"),
+    Input("endYearDropDown", "value"),
+    Input("removeOutliers", "value"))
+def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
+
+    if startYear == None or endYear == None:
+        masterDf = pd.DataFrame(columns=['Source', "rateOfChange"])
+        return px.box( masterDf, y="rateOfChange", x="Source", points="all")
+
+    startYear = int(startYear)
+    endYear = int(endYear)
+
+    if country == "USA":
+        fao_data = fao.get_data("United%20States%20of%20America", specie)
+        woah_data = woah.get_data("United%20States%20of%20America", specie)
+    else:
+        fao_data = fao.get_data(country, specie)
+        woah_data = woah.get_data(country, specie)
+
+    fao_data = fao.formatFAOData(fao_data)
+    woah_data = woah.formatWoahData(woah_data)
+
+    # Step 3: Get Census Data
+    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie)
+
+    #Only get the rows that have the correct specie
+    new_csv_data = []
+    for index, row in csv_data.iterrows():
+        if row['species'] == specie:
+            new_csv_data.append( [row['year'], row['population']] )
+
+    csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
+
+    # Step 4: Get National Data
+    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie)
 
     new_national_data = []
     for index, row in nationalData.iterrows():
@@ -1072,13 +1171,15 @@ def createIqrGraph(specie, country, startYear, endYear):
     fao_dict = {}
 
     for elem in fao_data:
-        fao_dict[int(elem[0])] = elem[1]
+        fao_dict[int(elem[0])] = elem[1] #elem[0] = year, elem[1] = value
 
     fao_iqr_list = []
+    counter = 0
     for i in range(startYear, endYear):
+        counter += 1
         #Add all the years that exist in the range
         try:
-            fao_iqr_list.append(fao_dict[i])
+            fao_iqr_list.append(float(fao_dict[i]))
         except:
             continue
 
@@ -1114,7 +1215,6 @@ def createIqrGraph(specie, country, startYear, endYear):
 
     woah_iqr_list = []
     for i in range(startYear, endYear):
-        #Add all the years that exist in the range
         try:
             woah_iqr_list.append(woah_dict[i])
         except:
@@ -1240,69 +1340,65 @@ def createIqrGraph(specie, country, startYear, endYear):
 
 
     # Remove the outliers?
-    removeOutliers = 'y'
 
-    if removeOutliers == 'y':
+    if removeOutliers != []:
 
         #Remove the outliers from fao
-        for index, elem in fao_roc.iterrows():
-            if elem['rateOfChange'] > fao_upperFence or elem['rateOfChange'] < fao_lowerFence:
-                fao_roc.drop(index, inplace=True)
+        index = 0
+        for elem in fao_iqr_list:
+            if elem > fao_upperFence or elem < fao_lowerFence:
+                fao_iqr_list.pop(index)
 
-            if index + 1 >= len(fao_roc):
-                break
+            index += 1
 
         #Remove the outliers from woah
-        woah_roc = woah_roc.reset_index()
-
-        for index, elem in woah_roc.iterrows():
-            if elem['rateOfChange'] > woah_upperFence or elem['rateOfChange'] < woah_lowerFence:
-                woah_roc.drop(index=index, inplace=True)
-
-            if index + 1 >= len(woah_roc):
-                break
+        index = 0
+        for elem in woah_iqr_list:
+            if elem > woah_upperFence or elem < woah_lowerFence:
+                woah_iqr_list.pop(index)
+            index += 1
 
         #Remove the outliers from csv
-        if csv_iqr:
-            for index, elem in csv_roc.iterrows():
-                if elem['rateOfChange'] > csv_upperFence or elem['rateOfChange'] < csv_lowerFence:
-                    csv_roc.drop(index, inplace=True)
-
-                if index + 1 >= len(csv_roc):
-                    break
+        index = 0
+        for elem in csv_iqr_list:
+            if elem > csv_upperFence or elem < csv_lowerFence:
+                csv_iqr_list.pop(index)
+            index += 1
 
         #Remove the outliers from national
-        if national_iqr:
-            for index, elem in national_roc.iterrows():
-                if elem['rateOfChange'] > national_upperFence or elem['rateOfChange'] < national_lowerFence:
-                    national_roc.drop(index, inplace=True)
-
-                if index + 1 >= len(national_roc):
-                    break
+        index = 0
+        for elem in national_iqr_list:
+            if elem > national_upperFence or elem < national_lowerFence:
+                national_iqr_list.pop(index)
+            index += 1
 
     #Fao
-    faoCopy = fao_roc['rateOfChange'].copy().to_frame()
+    faoCopy = pd.DataFrame(columns=['rateOfChange'])
+    faoCopy['rateOfChange']= fao_iqr_list
     faoNewCol = ['FAOSTAT' for i in range(len(faoCopy))]
     faoCopy['Source'] = faoNewCol
 
-    masterDf = faoCopy.copy()
+    masterDf = faoCopy
 
     #woah
-    woahCopy = woah_roc['rateOfChange'].copy().to_frame()
+    woahCopy = pd.DataFrame(columns=['rateOfChange'])
+    woahCopy['rateOfChange']= woah_iqr_list
     woahNewCol = ['WOAH' for i in range(len(woahCopy))]
     woahCopy['Source'] = woahNewCol
 
     masterDf = pd.concat([masterDf, woahCopy])
 
     #csv
-    csvCopy = csv_roc['rateOfChange'].copy().to_frame()
+    csvCopy = pd.DataFrame(columns=['rateOfChange'])
+    csvCopy['rateOfChange']= csv_iqr_list
     csvNewCol = ['UN Census Data' for i in range(len(csvCopy))]
     csvCopy['Source'] = csvNewCol
 
     masterDf = pd.concat([masterDf, csvCopy])
 
     #National
-    nationalCopy = national_roc['rateOfChange'].copy().to_frame()
+    nationalCopy = pd.DataFrame(columns=['rateOfChange'])
+    nationalCopy['rateOfChange']= national_iqr_list
     nationalNewCol = ['National Census Bureau' for i in range(len(nationalCopy))]
     nationalCopy['Source'] = nationalNewCol
 
@@ -1347,7 +1443,6 @@ def createIqrGraph(specie, country, startYear, endYear):
     Input("species_checklist", "value"),
     Input("country_checklist", "value"))
 def createFiveYearAvgGraph(specie, country):
-    species = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -1360,7 +1455,7 @@ def createFiveYearAvgGraph(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census Data
-    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species = helperFunctions.getFormattedCensusData(country, specie)
 
     # Only get the rows that have the correct specie
     new_csv_data = []
@@ -1371,7 +1466,7 @@ def createFiveYearAvgGraph(specie, country):
     csv_data = pd.DataFrame(new_csv_data, columns = ["year", "population"])
 
     # Step 4: Get National Data
-    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = helperFunctions.getFormattedNationalData(country, specie)
 
     new_national_data = []
     for index, row in nationalData.iterrows():
@@ -1532,22 +1627,18 @@ def updateFiveYearAvgHeader(specie, country):
     Output("species_checklist", "options"),
     Input("country_checklist", "value"))
 def update_species_checklist(country):
-    # Step one: Get FAO data
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
-    # Step 3: Get Census data
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
-        species = species + csv_data["species"].tolist() # Add the species from the csv file to the list of species
+        species = csv_data["species"].tolist() # Add the species from the csv file to the list of species
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
 
     except:
         print("Error, count not find the correct csv file")
 
-    # Step 4: Get National data
     try:
         nationalData = pd.read_csv(f"nationalData/{country}.csv")
-        species = species + nationalData["species"].tolist() # Add the species from the csv file to the list of species
+        species = nationalData["species"].tolist() # Add the species from the csv file to the list of species
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
 
     except:
@@ -1561,7 +1652,6 @@ def update_species_checklist(country):
     Input("species_checklist", "value"),
     Input("country_checklist", "value"))
 def populate_dropDown(specie, country):
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
         if species == None or species == []:
@@ -1589,10 +1679,10 @@ def populate_dropDown(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species  = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
 
     #Fill the dropdown with the available sources
     sources = []
@@ -1626,7 +1716,6 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
 
     # Step one: Get FAO data
     countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
         specie = species[0]
@@ -1651,10 +1740,10 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
 
     # Build a master dataframe
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
@@ -1758,7 +1847,6 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
 def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Greece", "Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-    species = ["Cattle","Sheep","Goats","Pigs","Chickens"]
 
     if specie == None:
         specie = species[0]
@@ -1783,10 +1871,10 @@ def update_line_chart(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
 
     # Build a master dataframe
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])

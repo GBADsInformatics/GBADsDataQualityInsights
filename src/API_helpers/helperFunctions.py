@@ -53,7 +53,7 @@ def str2frame(estr, source, sep = ',', lineterm = '\n'):
     return df
 
 
-def getFormattedCensusData(country, specie, species):
+def getFormattedCensusData(country, specie, species = []):
 
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
