@@ -1038,7 +1038,6 @@ def updateStartAndEndYearDropDowns(specie, country):
 
     def findLowestYear(df):
         years = df.year.unique()
-        print("years = ", years)
         years.sort()
         if years.size == 0:
             return 2021, 1959
@@ -1072,9 +1071,6 @@ def updateStartAndEndYearDropDowns(specie, country):
 
     if nationalDataGreatestYear > greatestYear:
         greatestYear = nationalDataGreatestYear
-
-    print("Lowest year", lowestYear)
-    print("Greatest year", greatestYear)
 
     return html.Div([
         html.H3(children='Select the range of years you would like to see'),
@@ -1198,8 +1194,8 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
         thirdQuartile = []
 
 
-    fao_q1 = np.median(firstQuartile)
-    fao_q3 = np.median(thirdQuartile)
+    fao_q1 = np.percentile(fao_iqr_list, 25)
+    fao_q3 = np.percentile(fao_iqr_list, 75)
 
     fao_iqr = 0
 
@@ -1239,8 +1235,8 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
     woah_q3 = 0
 
     if firstQuartile != [] and thirdQuartile != []:
-        woah_q1 = np.median(firstQuartile)
-        woah_q3 = np.median(thirdQuartile)
+        woah_q1 = np.percentile(woah_iqr_list, 25)
+        woah_q3 = np.percentile(woah_iqr_list, 75)
         woah_iqr = woah_q3 - woah_q1
 
     #Get the IQR for CSV
@@ -1270,13 +1266,13 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
         firstQuartile = []
         thirdQuartile = []
 
-    csv_iqr = 0
+    csv_iqr = -1
     csv_q1 = 0
     csv_q3 = 0
 
     if firstQuartile != [] and thirdQuartile != []:
-        csv_q1 = np.median(firstQuartile)
-        csv_q3 = np.median(thirdQuartile)
+        csv_q1 = np.percentile(firstQuartile, 25)
+        csv_q3 = np.percentile(thirdQuartile, 75)
         csv_iqr = csv_q3 - csv_q1
 
 
@@ -1309,11 +1305,11 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
 
     national_q1 = 0
     national_q3 = 0
-    national_iqr = 0
+    national_iqr = -1
 
     if firstQuartile != [] and thirdQuartile != []:
-        national_q1 = np.median(firstQuartile)
-        national_q3 = np.median(thirdQuartile)
+        national_q1 = np.percentile(firstQuartile, 25)
+        national_q3 = np.percentile(thirdQuartile, 75)
         national_iqr = national_q3 - national_q1
 
 
@@ -1324,11 +1320,11 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
     woah_upperFence = woah_q3 + (1.5 * woah_iqr)
     woah_lowerFence = woah_q1 - (1.5 * woah_iqr)
 
-    if csv_iqr:
+    if csv_iqr != -1:
         csv_upperFence = csv_q3 + (1.5 * csv_iqr)
         csv_lowerFence = csv_q1 - (1.5 * csv_iqr)
 
-    if national_iqr:
+    if national_iqr != -1:
         national_upperFence = national_q3 + (1.5 * national_iqr)
         national_lowerFence = national_q1 - (1.5 * national_iqr)
 
@@ -1338,9 +1334,7 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
 
     woah_roc = newDf
 
-
     # Remove the outliers?
-
     if removeOutliers != []:
 
         #Remove the outliers from fao
@@ -1359,18 +1353,20 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
             index += 1
 
         #Remove the outliers from csv
-        index = 0
-        for elem in csv_iqr_list:
-            if elem > csv_upperFence or elem < csv_lowerFence:
-                csv_iqr_list.pop(index)
-            index += 1
+        if csv_iqr != -1:
+            index = 0
+            for elem in csv_iqr_list:
+                if elem > csv_upperFence or elem < csv_lowerFence:
+                    csv_iqr_list.pop(index)
+                index += 1
 
         #Remove the outliers from national
-        index = 0
-        for elem in national_iqr_list:
-            if elem > national_upperFence or elem < national_lowerFence:
-                national_iqr_list.pop(index)
-            index += 1
+        if national_iqr != -1:
+            index = 0
+            for elem in national_iqr_list:
+                if elem > national_upperFence or elem < national_lowerFence:
+                    national_iqr_list.pop(index)
+                index += 1
 
     #Fao
     faoCopy = pd.DataFrame(columns=['rateOfChange'])
