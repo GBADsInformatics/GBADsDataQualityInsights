@@ -5,92 +5,20 @@ For the Global Burden of Animal Diseases
 
 Check us out! https://gbads-oie.com
 
-## Description of this Project
-As the saying goes, "Garbage in, Garbage out". This project is to evaluate the quality of data from the FAOSTAT, WOAH, UN Census, and individual country data for future modelers to understand the quality of the data before they use it in their models. You can read the report on the findings from using the tools in this repo. The report can be found here: https://docs.google.com/document/d/1gRUBvgBTjukJKQZnqwlkcEbSRYD6RK6S3SDPTf2eX94/edit?usp=sharing
-
-#### In this repo there is one program to view the data, three to analyze data quality, and one to predict future data.
-
-To view the data you will need to run the `generalDataViewer.py` dashboard located in the analysisTools folder.
-
-The 3 analysis dashboards are also located in the analysisTools folder. They are as follows
-
-1. `5yearPopulationAvg.py`
-
-This program takes the average rate of change for the increase in a species population for each year for a given country for each data source. This is used to compare the rate of change between each data source and if one is substantially bigger than the other two it could be concluded that there is a higher chance that it is wrong.
-
-![Alt text](lib/5yearAvgExample.png?raw=true "Example")
-
-2. `growthRates.py`
-
-If you take all the growth rates for a population of animals in a country every year, and you plot every yearly growth rate, it will produce a normal curve. From there we can spot outliers by defining a cut off of 3 standard deviations. Past this point we can label those points as outliers and conclude that there is a high chance that they are inaccuracies.
-
-![Alt text](lib/growthRatesExample.png?raw=true "Example")
-
-3. `IQR.py`
-
-This program takes the interquartile range of the data and compares it to the average rate of change. If the average rate of change is greater than the interquartile range, then it is likely that the data is inaccurate.
-
-![Alt text](lib/iqrExample.png?raw=true "Example")
-
-The program for viewing data
-
-1. `generalDataViewer.py`
-
-This program is a dashboard that allows you to view the data from the FAOSTAT, WOAH, UN Census, and individual country data for a given country and species.
-
-![Alt text](lib/generalDataViewExample.png?raw=true "Example")
-
-The program for predicting future data
-
-1. `polyRegression.py`
-
-This Dashboard shows the user the graph from `generalDataViewer.py` but allows you to configure a polynomial regression model to predict future data. The user can also configure the degree of the polynomial regression model. The user can also configure the number of years to predict into the future.
-
-![Alt text](lib/polyRegressionLineExample.png?raw=true "Example")
-
-## To Run The DashBoard
-Make sure you have pip/pip3 installed
-
-Navigate to into the directory, then run
-
-`cd src`
-
-Then run
-
-`pip3 (or pip) install -r requirements.txt`
+## Description of this roject
+As the saying goes, "Garbage in, Garbage out". This project is to evaluate the quality of data from the FAOSTAT, WOAH, UN Census, and individual country data for future modelers to understand the quality of the data before they use it in their models. You can read the report on the findings from using the tools in this repo.
 
 
-Finally run
+Findings from this tool are currently pending review before being published. Stay tunned on the GBADsKE website for more information.
 
-`python3 (or python) generalDatViewer.py`
+## To use this project
+Run these commands in the project folder
 
-or
-`python3 (or python) growthRates.py`
+```cd src```
 
-or
-`python3 (or python) IQR.py`
+```pip3 install -r requirements.txt```
 
-or
-`python3 (or python) 5yearPopulationAvg.py`
-
-or
-`python3 (or python) 5yearPopulationAvg.py`
-
-## To Run the Prediction Model
-Make sure you have pip/pip3 installed
-
-Navigate to into the directory, then run
-
-`cd src`
-
-Then run
-
-`pip3 (or pip) install -r requirements.txt`
-
-
-Finally run
-
-`python3 (or python) polyRegression.py`
+```python3 app.py```
 
 ## Data sources
 - FAOSTAT and WOAH/OIE come from the API
