@@ -3,7 +3,7 @@ By Ian McKechnie
 
 For the Global Burden of Animal Diseases
 
-Check us out! https://gbads-oie.com
+Check us out! [GBADsKE](https://www.gbadske.org)
 
 ## Description of this roject
 As the saying goes, "Garbage in, Garbage out". This project is to evaluate the quality of data from the FAOSTAT, WOAH, UN Census, and individual country data for future modelers to understand the quality of the data before they use it in their models. You can read the report on the findings from using the tools in this repo.
