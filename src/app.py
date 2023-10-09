@@ -17,13 +17,17 @@ import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
 from flask import Flask, redirect
 
+# Write data to a text file
+def writeToTextFile(data, name):
+    with open(f"{name}.txt", "w") as file:
+        file.write(str(data))
+
 # Get app base URL
 BASE_URL = os.getenv('BASE_URL','')
 
 countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
 species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
 sources   = ['No Options Available']
-
 
 #Build a Plotly graph around the data
 app = Dash(__name__, requests_pathname_prefix=BASE_URL+'/')
