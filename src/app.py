@@ -2,6 +2,8 @@
 
 import os
 import sys
+
+from outlierFinders import sendPolynomialRegressionOutliersToFile
 sys.path.append('../../src')
 from sklearn.linear_model import LinearRegression
 import API_helpers.fao as fao
@@ -16,11 +18,6 @@ import plotly.graph_objects as go
 import API_helpers.helperFunctions as helperFunctions
 import plotly.figure_factory as ff
 from flask import Flask, redirect
-
-# Write data to a text file
-def writeToTextFile(data, name):
-    with open(f"{name}.txt", "w") as file:
-        file.write(str(data))
 
 # Get app base URL
 BASE_URL = os.getenv('BASE_URL','')
@@ -1788,18 +1785,21 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
             new_model.fit(x_new, y)
 
             #Add in any missing years
-            for j in range(1960, x[-1]+1):
+            for j in range(x[0], x[-1]+1):
                 if j not in x:
                     x = np.append(x, j)
 
             x.sort()
 
             #Add in the predicted value years
-            x = np.append(x, [j for j in range(x[-1] + 1, maxYear+1)])
+            # x = np.append(x, [j for j in range(x[-1] + 1, maxYear+1)])
             x_new = model.fit_transform(x.reshape(-1, 1))
             ypredict = new_model.predict(x_new)
 
             fig.add_traces(go.Scatter(x=x, y=ypredict, mode='lines', name='Polynomial Regression Degree ' + str(i)))
+
+            if polyDegree == 3:
+                sendPolynomialRegressionOutliersToFile(x, y, ypredict, source, specie, country)
 
     fig.update_layout(
         title=f"Population of {specie} in {country}",
