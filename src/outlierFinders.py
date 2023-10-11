@@ -34,3 +34,32 @@ def sendPolynomialRegressionOutliersToFile(x, y, y_pred, source, specie, country
     #Write outliers to a text file
     header = "year,data from source,predicted data"
     writeToTextFile(header, outliers, f"{source}_{specie}_{country}_outliers_polynomial_regression")
+
+def upperBound(num):
+    return num + (num * 0.1)
+
+def lowerBound(num):
+    return num - (num * 0.1)
+
+
+def calculateFiveYearAvgOutliers(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr):
+
+    outliers = {}
+
+    for i in range(1, len(fao_percent_change)):
+        if fao_percent_change[i] > upperBound(fao_percent_change[i-1]) or fao_percent_change[i] < lowerBound(fao_percent_change[i-1]):
+            outliers[yearsArr[i]] = f"FAOSTAT,{fao_percent_change[i-1]},{fao_percent_change[i]}"
+
+    for i in range(1, len(woah_percent_change)):
+        if woah_percent_change[i] > upperBound(woah_percent_change[i-1]) or woah_percent_change[i] < lowerBound(woah_percent_change[i-1]):
+            outliers[yearsArr[i]] = f"WOAH,{woah_percent_change[i-1]},{woah_percent_change[i]}"
+
+    for i in range(1, len(csv_percent_change)):
+        if csv_percent_change[i] > upperBound(csv_percent_change[i-1]) or csv_percent_change[i] < lowerBound(csv_percent_change[i-1]):
+            outliers[yearsArr[i]] = f"Census data,{csv_percent_change[i-1]},{csv_percent_change[i]}"
+
+    for i in range(1, len(national_percent_change)):
+        if national_percent_change[i] > upperBound(national_percent_change[i-1]) or national_percent_change[i] < lowerBound(national_percent_change[i-1]):
+            outliers[yearsArr[i]] = f"national data,{national_percent_change[i-1]},{national_percent_change[i]}"
+
+    #Need a way of capturing the years

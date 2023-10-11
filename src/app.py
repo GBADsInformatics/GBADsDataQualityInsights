@@ -1472,7 +1472,6 @@ def createFiveYearAvgGraph(specie, country):
 
     nationalData = pd.DataFrame (new_national_data, columns = ["year", "population"])
 
-
     #Get a list of all the years from each data source
     fao_years = fao_data['year'].tolist()
     woah_years = woah_data['year'].tolist()
@@ -1537,6 +1536,8 @@ def createFiveYearAvgGraph(specie, country):
             national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
     #Graph them
+    calculateFiveYearAvgOutliers(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr)
+
     masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
     masterDf['FAOSTAT'] = fao_percent_change
     masterDf['WOAH'] = woah_percent_change
