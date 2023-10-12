@@ -3,7 +3,7 @@
 import os
 import sys
 
-from outlierFinders import sendPolynomialRegressionOutliersToFile
+from outlierFinders import *
 sys.path.append('../../src')
 from sklearn.linear_model import LinearRegression
 import API_helpers.fao as fao
@@ -1536,7 +1536,9 @@ def createFiveYearAvgGraph(specie, country):
             national_percent_change.append( ((national_averages[i] - national_averages[i-1]) / national_averages[i-1]) * 100 )
 
     #Graph them
-    calculateFiveYearAvgOutliers(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr)
+    calculateFiveYearAvgOutliersInternal(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr, specie, country)
+    calculateFiveYearAvgOutliersExternal(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr, specie, country)
+
 
     masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
     masterDf['FAOSTAT'] = fao_percent_change
