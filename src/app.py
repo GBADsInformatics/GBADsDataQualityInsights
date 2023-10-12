@@ -665,6 +665,8 @@ def updateGrowthRatesGraph1(specie, country):
                     row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
                     fao_outliers = pd.concat([fao_outliers, row], axis=0)
 
+            writeToTextFile("growth rate", fao_outliers.to_dict('records'), f"fao_outliers_{country}_{specie}_GROWTH_RATES")
+
             return html.Div([
                 html.H3(children='FAOSTAT Data for ' + specie + " in " + country, id="growthRatesGraph1Header"),
                 dcc.Graph(id='growthRatesGraph1', figure=growthRatesFig1),
@@ -796,6 +798,8 @@ def updateGrowthRatesGraph2(specie, country):
                     row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
                     woah_outliers = pd.concat([woah_outliers, row], axis=0)
 
+            writeToTextFile("growth rate", woah_outliers.to_dict('records'), f"woah_outliers_{country}_{specie}_GROWTH_RATES")
+
             return html.Div([
                 html.H3(children='WOAH Data for ' + specie + " in " + country, id="growthRatesGraph2Header"),
                 dcc.Graph(id='growthRatesGraph2', figure=growthRatesFig2),
@@ -893,6 +897,8 @@ def updateGrowthRatesGraph3(specie, country):
                     row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
                     census_outliers = pd.concat([census_outliers, row], axis=0)
 
+            writeToTextFile("growth rate", census_outliers.to_dict('records'), f"census_outliers_{country}_{specie}_GROWTH_RATES")
+
             return [
                 html.H3(children='Census Data for ' + specie + " in " + country),
                 dcc.Graph(id='growthRatesGraph3', figure=growthRatesFig3),
@@ -984,6 +990,7 @@ def updateGrowthRatesGraph4(specie, country):
                     row = round(pd.DataFrame([data], columns=['year', "growthRate"]), 2)
                     national_outliers = pd.concat([growthRatesFig, row], axis=0)
 
+            writeToTextFile("growth rate", national_outliers.to_dict('records'), f"national_outliers_{country}_{specie}_GROWTH_RATES")
 
             return [
                 html.H3(children='National Data for ' + specie + " in " + country),
