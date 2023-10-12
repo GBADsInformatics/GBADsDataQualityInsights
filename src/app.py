@@ -1376,6 +1376,42 @@ def createIqrGraph(specie, country, startYear, endYear, removeOutliers):
                     national_iqr_list.pop(index)
                 index += 1
 
+    else:
+        outliers = []
+
+        #Remove the outliers from fao
+        index = 0
+        for elem in fao_iqr_list:
+            if elem > fao_upperFence or elem < fao_lowerFence:
+                outliers.append(f"No date,FAO,{fao_iqr_list[index]}")
+
+            index += 1
+
+        #Remove the outliers from woah
+        index = 0
+        for elem in woah_iqr_list:
+            if elem > woah_upperFence or elem < woah_lowerFence:
+                outliers.append(f"No date,WOAH,{woah_iqr_list[index]}")
+            index += 1
+
+        #Remove the outliers from csv
+        if csv_iqr != -1:
+            index = 0
+            for elem in csv_iqr_list:
+                if elem > csv_upperFence or elem < csv_lowerFence:
+                    outliers.append(f"No date,CSV,{csv_iqr_list[index]}")
+                index += 1
+
+        #Remove the outliers from national
+        if national_iqr != -1:
+            index = 0
+            for elem in national_iqr_list:
+                if elem > national_upperFence or elem < national_lowerFence:
+                    outliers.append(f"No date,National,{national_iqr_list[index]}")
+                index += 1
+
+        writeToTextFile("Source,value", outliers, f"outliers_{country}_{specie}_IQR")
+
     #Fao
     faoCopy = pd.DataFrame(columns=['rateOfChange'])
     faoCopy['rateOfChange']= fao_iqr_list
