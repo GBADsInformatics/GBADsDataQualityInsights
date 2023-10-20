@@ -22,8 +22,9 @@ from flask import Flask, redirect
 # Get app base URL
 BASE_URL = os.getenv('BASE_URL','')
 
-countries = ["Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-species   = ["Cattle", "Sheep", "Goats", "Pigs", "Chickens"]
+countries = ["Canada", "United States", "Chile", "Brazil", "Ireland", "Czechia", "Slovakia", "Iran", "Ethopia", "Morocco", "South Africa", "India", "China", "Indonesia", "Australia"]
+countries.sort()
+species   = ["Cattle", "Sheep", "Pigs", "Chickens"]
 sources   = ['No Options Available']
 
 #Build a Plotly graph around the data
@@ -123,7 +124,6 @@ def render_content(tab):
     elif tab == 'genDataViewer':
         return html.Div([
             html.H1(children='Data Quality Comparison for FAOSTAT, WOAH, Census Data, and National Sources'),
-
             dcc.Graph(id='genDataViewerGraph'),
         ])
 
@@ -1583,15 +1583,15 @@ def createFiveYearAvgGraph(specie, country):
     calculateFiveYearAvgOutliersExternal(fao_percent_change, woah_percent_change, csv_percent_change, national_percent_change, yearsArr, specie, country)
 
 
-    masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "census", "national",])
+    masterDf = pd.DataFrame(columns = ["year", "faostat", "WOAH", "Census", "National",])
     masterDf['FAOSTAT'] = fao_percent_change
     masterDf['WOAH'] = woah_percent_change
-    masterDf['census'] = csv_percent_change
-    masterDf['national'] = national_percent_change
-    masterDf['year'] = yearsArr
+    masterDf['Census'] = csv_percent_change
+    masterDf['National'] = national_percent_change
+    masterDf['Year'] = yearsArr
 
     # Census and national are all zeros
-    if masterDf['census'].isnull().values.any() and masterDf['national'].isnull().values.any():
+    if masterDf['Census'].isnull().values.any() and masterDf['National'].isnull().values.any():
 
         fig = go.Figure([
             go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
@@ -1607,19 +1607,19 @@ def createFiveYearAvgGraph(specie, country):
         ])
 
     #Census is all zeros
-    elif masterDf['census'].isnull().values.any():
+    elif masterDf['Census'].isnull().values.any():
         fig = go.Figure([
-            go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-            go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
-            go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
+            go.Bar(name='FAOSTAT', x=masterDf['Year'], y=masterDf['FAOSTAT']),
+            go.Bar(name='Census', x=masterDf['Year'], y=masterDf['Census']),
+            go.Bar(name='WOAH', x=masterDf['Year'], y=masterDf['WOAH']),
         ])
 
     else:
         fig = go.Figure([
-            go.Bar(name='FAOSTAT', x=masterDf['year'], y=masterDf['FAOSTAT']),
-            go.Bar(name='Census', x=masterDf['year'], y=masterDf['census']),
-            go.Bar(name='National', x=masterDf['year'], y=masterDf['national']),
-            go.Bar(name='WOAH', x=masterDf['year'], y=masterDf['WOAH']),
+            go.Bar(name='FAOSTAT', x=masterDf['Year'], y=masterDf['FAOSTAT']),
+            go.Bar(name='Census', x=masterDf['Year'], y=masterDf['Census']),
+            go.Bar(name='National', x=masterDf['Year'], y=masterDf['National']),
+            go.Bar(name='WOAH', x=masterDf['Year'], y=masterDf['WOAH']),
         ])
 
     fig.update_layout(
@@ -1670,24 +1670,23 @@ def updateFiveYearAvgHeader(specie, country):
     Output("species_checklist", "options"),
     Input("country_checklist", "value"))
 def update_species_checklist(country):
+    species = []
 
     try:
         csv_data = pd.read_csv(f"censusData/{country}.csv")
         species = csv_data["species"].tolist() # Add the species from the csv file to the list of species
-        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
 
     except:
         print("Error, count not find the correct csv file")
 
     try:
         nationalData = pd.read_csv(f"nationalData/{country}.csv")
-        species = nationalData["species"].tolist() # Add the species from the csv file to the list of species
-        species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
+        species += nationalData["species"].tolist() # Add the species from the csv file to the list of species
 
     except:
         print("Error, count not find the correct csv file")
 
-    return species
+    return list(dict.fromkeys(species))  # Remove duplicates from the list of species
 
 
 @app.callback(
@@ -1893,9 +1892,7 @@ def polynomialRegression(specie, country, source, polyDegree, maxYear):
 def update_line_chart(specie, country):
     # Step one: Get FAO data
     countries = ["Greece", "Ethiopia", "Canada", "USA", "Ireland", "India", "Brazil", "Botswana", "Egypt", "South Africa", "Indonesia", "China", "Australia", "NewZealand", "Japan", "Mexico", "Argentina", "Chile"]
-
-    if specie == None:
-        specie = species[0]
+    species = []
 
     if country == "USA":
         fao_data = fao.get_data("United%20States%20of%20America", specie)
@@ -1917,21 +1914,21 @@ def update_line_chart(specie, country):
     woah_data = woah.formatWoahData(woah_data)
 
     # Step 3: Get Census data
-    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie)
+    csv_data, csv_index_list, species = API_helpers.helperFunctions.getFormattedCensusData(country, specie, species)
 
     # Step 4: Get National data
-    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie)
+    nationalData, nationalData_index_list, species = API_helpers.helperFunctions.getFormattedNationalData(country, specie, species)
 
     # Build a master dataframe
     master_df = pd.concat([fao_data, woah_data, csv_data.iloc[csv_index_list], nationalData.iloc[nationalData_index_list]])
 
     # Build the plotly graph
     fig = px.line(
-            master_df,
-            x=master_df["year"],
-            y=master_df["population"],
-            color=master_df["source"],
-            markers=True)
+        master_df,
+        x=master_df["year"],
+        y=master_df["population"],
+        color=master_df["source"],
+        markers=True)
 
     fig.update_yaxes(
         type='linear',

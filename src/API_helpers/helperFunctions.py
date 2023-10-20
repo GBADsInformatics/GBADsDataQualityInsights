@@ -68,18 +68,22 @@ def getFormattedCensusData(country, specie, species = []):
 
     return csv_data, csv_index_list, species
 
+
 def getFormattedNationalData(country, specie, species = []):
+
+    print("species before national data: ", species)
 
     try:
         nationalData = pd.read_csv(f"nationalData/{country}.csv")
-        #Add the species from the national data
         species = species + nationalData["species"].tolist() # Add the species from the csv file to the list of species
         species = list(dict.fromkeys(species))  # Remove duplicates from the list of species
         nationalData_index_list = nationalData[(nationalData['species'] == specie)].index.tolist()
+        print(f"Success finding national data for {country}")
 
     except:
-        print("Error, count not find the correct csv file for the national data")
+        print(f"Error, count not find the correct csv file for the national data for {country}")
         nationalData = pd.DataFrame()
         nationalData_index_list = []
 
+    print("species after national data: ", species)
     return nationalData, nationalData_index_list, species
