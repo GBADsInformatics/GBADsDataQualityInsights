@@ -12,7 +12,7 @@ As the saying goes, "Garbage in, Garbage out". This project is to evaluate the q
 Findings from this tool are currently pending review before being published. Stay tunned on the GBADsKE website for more information.
 
 ## To use this project
-Run these commands in the project folder
+Run these commands in the project folder you must be using python3 with a version <3.11. (I used python3 version 3.10 for development)
 
 ```cd src```
 
